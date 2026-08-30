@@ -169,3 +169,20 @@ def principal() {
 
 
 
+
+
+
+
+
+
+
+
+
+### AUTÓMATA FINÍTO
+
+<img width="991" height="1034" alt="4b17446d-03af-4933-8fac-8b1903dedc07" src="https://github.com/user-attachments/assets/9b5cbfa4-ad8d-4d8c-b6c7-5f46484bd735" />
+
+
+
+
+
