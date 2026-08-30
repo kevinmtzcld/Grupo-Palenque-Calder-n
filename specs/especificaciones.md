@@ -18,6 +18,34 @@ será rechazado por el analizador léxico, y generará un error léxico con el n
 def · principal · entero · racional · cadena · si · sino · mientras · mostrar · retornar
 
 
-| hola | hola |
 
 
+### 4. Tabla de tokens
+
+| Código | Token | Lexema |
+| :---: | :--- | :--- |
+| **257** | `PR_DEF` | `def` |
+| **258** | `PR_RACIONAL` | `racional` |
+| **259** | `PR_SI` | `si` |
+| **260** | `PR_SINO` | `sino` |
+| **261** | `PR_MIENTRAS` | `mientras` |
+| **262** | `PR_MOSTRAR` | `mostrar` |
+| **263** | `PR_PRINCIPAL` | `principal` |
+| **264** | `ID` | Identificador (`a`, `acum`) |
+| **265** | `LIT_RACIONAL` | Constante racional (`$3/4$`) |
+| **266** | `LIT_ENTERO` | Constante entera (`5`) |
+| **267** | `LIT_CADENA` | Cadena de texto (`"Resultado:"`) |
+| **268** | `OP_ASIG` | `=` |
+| **269** | `OP_SUMA` | `+` |
+| **270** | `OP_RESTA` | `-` |
+| **271** | `OP_MULT` | `*` |
+| **272** | `OP_DIV` | `/` |
+| **273** | `COMP_MAYOR` | `>` |
+| **274** | `COMP_MENOR` | `<` |
+| **275** | `COMP_MAYOR_IGUAL` | `>=` |
+| **276** | `COMP_MENOR_IGUAL` | `<=` |
+| **277** | `COMP_IGUAL` | `==` |
+| **278** | `COMP_DISTINTO` | `!=` |
+| **279** | `OP_AND` | `and` |
+| **280** | `OP_OR` | `or` |
+| — | Literales | `(`, `)`, `{`, `}`, `;`, `:`, `,` se devuelven como su propio carácter |
