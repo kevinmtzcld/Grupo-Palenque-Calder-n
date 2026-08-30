@@ -1,9 +1,6 @@
 1.ALFABETO
-
 Σ = L ∪ D ∪ O ∪ R ∪ S ∪ B
-
 Donde:
-
 L (Letras): letras mayúsculas y minúsculas.
 D (Dígitos): 0–9.
 O (Operadores): +, -, *, /, =, <, >.
@@ -21,6 +18,6 @@ será rechazado por el analizador léxico, y generará un error léxico con el n
 def · principal · entero · racional · cadena · si · sino · mientras · mostrar · retornar
 
 
-
+| hola | hola |
 
 
