@@ -56,6 +56,8 @@ def · principal · entero · racional · cadena · si · sino · mientras · mo
 // Muestra el uso de identificadores, palabras reservadas,
 // racionales explícitos, cadenas y estructuras básicas
 
+
+
 def principal() {
     // Declaración de variables y racionales explícitos
     racional mi_fraccion;
