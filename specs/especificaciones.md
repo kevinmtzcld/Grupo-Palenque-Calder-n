@@ -9,6 +9,21 @@ S (Símbolos): (, ), {, }, ;, :, ,, ".
 B (Blancos): espacio, tabulación (\t), salto de línea (\n) y retorno de carro (\r).
 
 
+## 2. Alfabeto
+
+Σ = L ∪ D ∪ O ∪ R ∪ S ∪ B
+
+| Clase | Caracteres |
+| :---: | :--- |
+| **L** | `a – z`, `A – Z` |
+| **D** | `0 – 9` |
+| **O** | `+`, `-`, `*`, `/`, `=`, `<`, `>` |
+| **R** | `$` (utilizado para delimitar racionales) |
+| **S** | `(`, `)`, `{`, `}`, `;`, `:`, `,`, `"` |
+| **B** | espacio, tabulación (`\t`), salto de línea (`\n`), retorno de carro (`\r`) |
+| **OTRO** | cualquier otro carácter → error léxico |
+
+
 **Cualquier carácter presente en el archivo .txt que no pertenezca a esta unión de conjuntos (por ejemplo: @, #, ~, ?, _, etc.) 
 será rechazado por el analizador léxico, y generará un error léxico con el número de línea correspondiente**
 
