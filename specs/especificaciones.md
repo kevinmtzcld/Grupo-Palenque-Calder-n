@@ -88,7 +88,83 @@ def principal() {
 
 
 
+## 5. GRAMÁTICA
+```
+<programa>              ::= <lista_funciones> PR_PRINCIPAL '(' ')' <bloque>
 
+<lista_funciones>      ::= <lista_funciones> <definicion_funcion>
+                          | ε
+
+<definicion_funcion>   ::= PR_DEF ID '(' ')' <bloque>
+
+<bloque>                ::= '{' <lista_sentencias> '}'
+
+<lista_sentencias>      ::= <lista_sentencias> <sentencia>
+                          | <sentencia>
+
+<sentencia>             ::= <sentencia_declaracion>
+                          | <sentencia_asignacion>
+                          | <sentencia_si>
+                          | <sentencia_mientras>
+                          | <sentencia_mostrar>
+                          | <sentencia_retorno>
+                          | <llamada_funcion> ';'
+
+<sentencia_declaracion> ::= <tipo_dato> <lista_variables> ';'
+
+<tipo_dato>             ::= PR_ENTERO
+                          | PR_RACIONAL
+                          | PR_CADENA
+
+<lista_variables>       ::= <lista_variables> ',' ID
+                          | ID
+
+<sentencia_asignacion>  ::= ID OP_ASIG <expresion_matematica> ';'
+                          | ID OP_ASIG LIT_CADENA ';'
+
+<sentencia_si>          ::= PR_SI '(' <expresion_logica> ')' <bloque>
+                          | PR_SI '(' <expresion_logica> ')' <bloque> PR_SINO <bloque>
+
+<sentencia_mientras>    ::= PR_MIENTRAS '(' <expresion_logica> ')' <bloque>
+
+<sentencia_mostrar>     ::= PR_MOSTRAR '(' <expresion_matematica> ')' ';'
+                          | PR_MOSTRAR '(' LIT_CADENA ')' ';'
+
+<sentencia_retorno>     ::= PR_RETORNAR <expresion_matematica> ';'
+
+<llamada_funcion>       ::= ID '(' ')'
+
+<expresion_logica>      ::= <expresion_logica> OP_OR <termino_logico>
+                          | <termino_logico>
+
+<termino_logico>        ::= <termino_logico> OP_AND <factor_logico>
+                          | <factor_logico>
+
+<factor_logico>         ::= <expresion_matematica> <operador_comparacion> <expresion_matematica>
+                          | '(' <expresion_logica> ')'
+
+<operador_comparacion>  ::= COMP_IGUAL 
+                          | COMP_DISTINTO 
+                          | COMP_MENOR 
+                          | COMP_MAYOR 
+                          | COMP_MENOR_IGUAL 
+                          | COMP_MAYOR_IGUAL
+
+<expresion_matematica>  ::= <expresion_matematica> OP_SUMA <termino_matematico>
+                          | <expresion_matematica> OP_RESTA <termino_matematico>
+                          | <termino_matematico>
+
+<termino_matematico>    ::= <termino_matematico> OP_MULT <factor_matematico>
+                          | <termino_matematico> OP_DIV <factor_matematico>
+                          | <factor_matematico>
+
+<factor_matematico>     ::= ID
+                          | LIT_ENTERO
+                          | LIT_RACIONAL
+                          | '(' <expresion_matematica> ')'
+                          | <llamada_funcion>
+
+```
 
 
 
