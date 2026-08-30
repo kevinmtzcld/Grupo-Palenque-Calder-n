@@ -53,6 +53,7 @@ def · principal · entero · racional · cadena · si · sino · mientras · mo
 
 
 ## 4.PROGRAMA DE EJEMPLO
+```
 // Muestra el uso de identificadores, palabras reservadas,
 // racionales explícitos, cadenas y estructuras básicas
 
@@ -82,8 +83,7 @@ def principal() {
 
     retornar 0;
 }
-
-
+```
 
 
 
