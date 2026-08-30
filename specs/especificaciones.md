@@ -47,3 +47,47 @@ def · principal · entero · racional · cadena · si · sino · mientras · mo
 | **279** | `OP_AND` | `and` |
 | **280** | `OP_OR` | `or` |
 | — | Literales | `(`, `)`, `{`, `}`, `;`, `:`, `,` se devuelven como su propio carácter |
+
+
+
+
+
+## 4.PROGRAMA DE EJEMPLO
+// Muestra el uso de identificadores, palabras reservadas,
+// racionales explícitos, cadenas y estructuras básicas
+
+def principal() {
+    // Declaración de variables y racionales explícitos
+    racional mi_fraccion;
+    entero contador;
+    cadena mensaje;
+
+    mi_fraccion = $3/4$;
+    contador = 1;
+    mensaje = "Procesando datos...";
+
+    // Estructura condicional y comparación
+    si (contador <= 10) {
+        mostrar(mensaje);
+    } sino {
+        mostrar("Límite superado");
+    }
+
+    // Bucles y operadores relacionales
+    mientras (contador < 5) {
+        contador = contador + 1;
+    }
+
+    retornar 0;
+}
+
+
+
+
+
+
+
+
+
+
+
