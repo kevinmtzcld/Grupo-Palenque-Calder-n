@@ -54,35 +54,31 @@ def · principal · entero · racional · cadena · si · sino · mientras · mo
 
 ## 4.PROGRAMA DE EJEMPLO
 ```
-// Muestra el uso de identificadores, palabras reservadas,
-// racionales explícitos, cadenas y estructuras básicas
+def obtener_bono() {
+    racional bono;
+    bono = $1/2$;
+    mostrar("CALCULANDO BONO...");
+    retornar bono;
+}
 
-
-
-def principal() {
-    // Declaración de variables y racionales explícitos
-    racional mi_fraccion;
-    entero contador;
+principal() {
+    racional total;
+    entero usuario_id;
     cadena mensaje;
 
-    mi_fraccion = $3/4$;
-    contador = 1;
-    mensaje = "Procesando datos...";
+    usuario_id = 101;
+    mensaje = "PROCESANDO USUARIO:";
 
-    // Estructura condicional y comparación
-    si (contador <= 10) {
-        mostrar(mensaje);
-    } sino {
-        mostrar("Límite superado");
-    }
+    mostrar(mensaje);
+    mostrar(usuario_id);
 
-    // Bucles y operadores relacionales
-    mientras (contador < 5) {
-        contador = contador + 1;
-    }
+    // LLAMADA A FUNCION AUXILIAR
+    total = obtener_bono();
 
-    retornar 0;
+    mostrar("TOTAL CON BONO:");
+    mostrar(total);
 }
+
 ```
 
 
