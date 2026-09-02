@@ -9,7 +9,7 @@
 | **O** | `+`, `-`, `*`, `/`, `=`, `<`, `>` |
 | **R** | `$` (utilizado para delimitar racionales) |
 | **S** | `(`, `)`, `{`, `}`, `;`, `:`, `,`, `"` |
-| **B** | espacio, tabulación (`\t`), salto de línea (`\n`), retorno de carro (`\r`) |
+| **B** | espacio, tabulación (`\t`), salto de línea (`\n`)|
 | **OTRO** | cualquier otro carácter → error léxico |
 
 **Cualquier carácter presente en el archivo .txt que no pertenezca a esta unión de conjuntos (por ejemplo: @, #, ~, ?, _, etc.) 
