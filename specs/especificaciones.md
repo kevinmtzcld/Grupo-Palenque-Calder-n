@@ -59,7 +59,7 @@ def · principal · entero · racional · cadena · si · sino · mientras · mo
 def obtener_bono() {
     racional bono;
     bono = $1/2$;
-    mostrar("CALCULANDO BONO...");
+    mostrar("CALCULANDO bono...");
     retornar bono;
 }
 
@@ -69,15 +69,15 @@ principal() {
     cadena mensaje;
 
     usuario_id = 101;
-    mensaje = "PROCESANDO USUARIO:";
+    mensaje = "PROCESANDO usuario:";
 
     mostrar(mensaje);
     mostrar(usuario_id);
 
-    // LLAMADA A FUNCION AUXILIAR
+    // LLAMADA
     total = obtener_bono();
 
-    mostrar("TOTAL CON BONO:");
+    mostrar("total con bono:");
     mostrar(total);
 }
 
