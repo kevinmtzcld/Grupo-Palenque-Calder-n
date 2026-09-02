@@ -91,7 +91,7 @@ principal() {
 <programa>              ::= <lista_funciones> PR_PRINCIPAL '(' ')' <bloque>
 
 <lista_funciones>      ::= <lista_funciones> <definicion_funcion>
-                          | ε
+                          | λ
 
 <definicion_funcion>   ::= PR_DEF ID '(' ')' <bloque>
 
