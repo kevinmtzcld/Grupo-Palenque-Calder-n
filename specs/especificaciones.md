@@ -51,6 +51,39 @@ def · principal · entero · racional · cadena · si · sino · mientras · mo
 
 
 
+## 3. Tabla de tokens
+
+|  Código | Token              | Lexema                                                                 |
+| :-----: | :----------------- | :--------------------------------------------------------------------- |
+| **257** | `PR_DEF`           | `def`                                                                  |
+| **258** | `PR_RACIONAL`      | `racional`                                                             |
+| **259** | `PR_SI`            | `si`                                                                   |
+| **260** | `PR_SINO`          | `sino`                                                                 |
+| **261** | `PR_MIENTRAS`      | `mientras`                                                             |
+| **262** | `PR_MOSTRAR`       | `mostrar`                                                              |
+| **263** | `PR_PRINCIPAL`     | `principal`                                                            |
+| **264** | `PR_CADENA`        | `cadena`                                                               |
+| **265** | `PR_ENTERO`        | `entero`                                                               |
+| **266** | `ID`               | Identificador (`a`, `acum`)                                            |
+| **267** | `LIT_RACIONAL`     | Constante racional (`$3/4$`)                                           |
+| **268** | `LIT_ENTERO`       | Constante entera (`5`)                                                 |
+| **269** | `LIT_CADENA`       | Cadena de texto (`"Resultado:"`)                                       |
+| **270** | `OP_ASIG`          | `=`                                                                    |
+| **271** | `OP_SUMA`          | `+`                                                                    |
+| **272** | `OP_RESTA`         | `-`                                                                    |
+| **273** | `OP_MULT`          | `*`                                                                    |
+| **274** | `OP_DIV`           | `/`                                                                    |
+| **275** | `COMP_MAYOR`       | `>`                                                                    |
+| **276** | `COMP_MENOR`       | `<`                                                                    |
+| **277** | `COMP_MAYOR_IGUAL` | `>=`                                                                   |
+| **278** | `COMP_MENOR_IGUAL` | `<=`                                                                   |
+| **279** | `COMP_IGUAL`       | `==`                                                                   |
+| **280** | `COMP_DISTINTO`    | `!=`                                                                   |
+| **281** | `OP_AND`           | `and`                                                                  |
+| **282** | `OP_OR`            | `or`                                                                   |
+|    —    | Literales          | `(`, `)`, `{`, `}`, `;`, `:`, `,` se devuelven como su propio carácter |
+
+
 
 ## 4.PROGRAMA DE EJEMPLO
 ```
