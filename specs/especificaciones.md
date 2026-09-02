@@ -49,7 +49,7 @@ def · principal · entero · racional · cadena · si · sino · mientras · mo
 | **281** | `COMP_DISTINTO`    | `!=`                                                                   |
 | **282** | `OP_AND`           | `and`                                                                  |
 | **283** | `OP_OR`            | `or`                                                                   |
-|    —    | Literales          | `(`, `)`, `{`, `}`, `;`, `:`, `,` se devuelven como su propio carácter |
+|    —    | Literales          | `(`, `)`, `{`, `}`, `;`, `:`, `,`  |
 
 
 
