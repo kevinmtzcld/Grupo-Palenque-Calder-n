@@ -51,6 +51,44 @@ def · principal  · racional · si · sino · mientras · mostrar · retornar
 |    —    | Literales          | `(`, `)`, `{`, `}`, `;`, `:`, `,`  |
 
 
+## 3. Tabla de tokens
+
+|  Código | Token              | Lexema                          |
+| :-----: | :----------------- | :------------------------------ |
+| **257** | `PR_DEF`           | `def`                           |
+| **258** | `PR_PRINCIPAL`     | `principal`                     |
+| **259** | `PR_RACIONAL`      | `racional`                      |
+| **260** | `PR_SI`            | `si`                            |
+| **261** | `PR_SINO`          | `sino`                          |
+| **262** | `PR_MIENTRAS`      | `mientras`                      |
+| **263** | `PR_MOSTRAR`       | `mostrar`                       |
+| **264** | `PR_RETORNAR`      | `retornar`                      |
+| **265** | `ID`               | Identificador (`a`, `acum`)     |
+| **266** | `LIT_RACIONAL`     | Constante racional (`3/4`, `5`) |
+| **267** | `OP_ASIG`          | `=`                             |
+| **268** | `OP_SUMA`          | `+`                             |
+| **269** | `OP_RESTA`         | `-`                             |
+| **270** | `OP_MULT`          | `*`                             |
+| **271** | `OP_DIV`           | `/`                             |
+| **272** | `COMP_MAYOR`       | `>`                             |
+| **273** | `COMP_MENOR`       | `<`                             |
+| **274** | `COMP_MAYOR_IGUAL` | `>=`                            |
+| **275** | `COMP_MENOR_IGUAL` | `<=`                            |
+| **276** | `COMP_IGUAL`       | `==`                            |
+| **277** | `COMP_DISTINTO`    | `!=`                            |
+| **278** | `OP_AND`           | `and`                           |
+| **279** | `OP_OR`            | `or`                            |
+| **280** | `PAR_IZQ`          | `(`                             |
+| **281** | `PAR_DER`          | `)`                             |
+| **282** | `LLAVE_IZQ`        | `{`                             |
+| **283** | `LLAVE_DER`        | `}`                             |
+| **284** | `PUNTO_COMA`       | `;`                             |
+| **285** | `DOS_PUNTOS`       | `:`                             |
+| **286** | `COMA`             | `,`                             |
+| **287** | `COMILLA`          | `"`                             |
+
+
+
 
 
 ## 4.PROGRAMA DE EJEMPLO
