@@ -106,79 +106,51 @@ principal()
 
 ## 5. GRAMÁTICA
 ```
-<programa>              ::= <lista_funciones> PR_PRINCIPAL '(' ')' <bloque>
+<programa>::= <declaracion><funciones> PR_PRINCIPAL PAR_IZQ PAR_DER <bloque>
 
-<lista_funciones>      ::= <lista_funciones> <definicion_funcion>
-                          | λ
+<declaracion> ::= PR_RACIONAL <lista_variables> PUNTO_COMA
+<lista_variables> ::= <variable> | <variable> COMA <lista_variables>
+<variable> ::= ID | ID OP_ASIG LIT_RACIONAL
 
-<definicion_funcion>   ::= PR_DEF ID '(' ')' <bloque>
 
-<bloque>                ::= '{' <lista_sentencias> '}'
+<funciones> ::= lambda | <funcion> <funciones>
+<funcion> ::= PR_DEF ID PAR_IZQ PAR_DER <bloque>
+<bloque> ::= LLAVE_IZQ <sentencias> LLAVE_DER
 
-<lista_sentencias>      ::= <lista_sentencias> <sentencia>
-                          | <sentencia>
+<sentencias> ::= lambda | <sentencia> <sentencias>
+<sentencia> ::= <asignacion> | <si>| <mientras>| <mostrar>| <retornar> | <llamada_funcion>
 
-<sentencia>             ::= <sentencia_declaracion>
-                          | <sentencia_asignacion>
-                          | <sentencia_si>
-                          | <sentencia_mientras>
-                          | <sentencia_mostrar>
-                          | <sentencia_retorno>
-                          | <llamada_funcion> ';'
+<asignacion> ::= ID OP_ASIG <expresion> PUNTO_COMA
+<expresion> ::= <termino> | <expresion> OP_SUMA <termino> | <expresion> OP_RESTA <termino>
+<termino> ::= <factor> | <termino> OP_MULT <factor> | <termino> OP_DIV <factor>
+<factor> ::= LIT_RACIONAL | ID | PAR_IZQ <expresion> PAR_DER | ID PAR_IZQ PAR_DER
 
-<sentencia_declaracion> ::= <tipo_dato> <lista_variables> ';'
+<si> ::= PR_SI PAR_IZQ <condicion> PAR_DER <bloque> PR_SINO <bloque>
+<mientras> ::= PR_MIENTRAS PAR_IZQ <condicion> PAR_DER <bloque>
 
-<tipo_dato>             ::= PR_ENTERO
-                          | PR_RACIONAL
-                          | PR_CADENA
+<mostrar> ::= PR_MOSTRAR PAR_IZQ <argumentos_mostrar> PAR_DER PUNTO_COMA
+<argumentos_mostrar> ::= ID | COMILLA LIT_CADENA COMILLA | COMILLA LIT_CADENA COMILLA COMA <lista_ids_mostrar>
+<lista_ids_mostrar> ::= ID | ID COMA <lista_ids_mostrar>
 
-<lista_variables>       ::= <lista_variables> ',' ID
-                          | ID
+<retornar> ::= PR_RETORNAR PAR_IZQ <valor_retorno> PAR_DER PUNTO_COMA
+<valor_retorno> ::= ID | LIT_RACIONAL
 
-<sentencia_asignacion>  ::= ID OP_ASIG <expresion_matematica> ';'
-                          | ID OP_ASIG LIT_CADENA ';'
+<llamada_funcion> ::= ID PAR_IZQ PAR_DER PUNTO_COMA
 
-<sentencia_si>          ::= PR_SI '(' <expresion_logica> ')' <bloque>
-                          | PR_SI '(' <expresion_logica> ')' <bloque> PR_SINO <bloque>
 
-<sentencia_mientras>    ::= PR_MIENTRAS '(' <expresion_logica> ')' <bloque>
 
-<sentencia_mostrar>     ::= PR_MOSTRAR '(' <expresion_matematica> ')' ';'
-                          | PR_MOSTRAR '(' LIT_CADENA ')' ';'
+<condicion> ::= <cond_or>
 
-<sentencia_retorno>     ::= PR_RETORNAR <expresion_matematica> ';'
+<cond_or> ::= <cond_and> | <cond_or> OP_OR <cond_and>
 
-<llamada_funcion>       ::= ID '(' ')'
+<cond_and> ::= <cond_factor> | <cond_and> OP_AND <cond_factor>
 
-<expresion_logica>      ::= <expresion_logica> OP_OR <termino_logico>
-                          | <termino_logico>
+<cond_factor> ::= PAR_IZQ <condicion> PAR_DER | <comparacion>
 
-<termino_logico>        ::= <termino_logico> OP_AND <factor_logico>
-                          | <factor_logico>
+<comparacion> ::= <expresion> <operador_comparacion> <expresion>
 
-<factor_logico>         ::= <expresion_matematica> <operador_comparacion> <expresion_matematica>
-                          | '(' <expresion_logica> ')'
+<operador_comparacion> ::= COMP_MAYOR | COMP_MENOR | COMP_MAYOR_IGUAL | COMP_MENOR_IGUAL | COMP_IGUAL | COMP_DISTINTO
 
-<operador_comparacion>  ::= COMP_IGUAL 
-                          | COMP_DISTINTO 
-                          | COMP_MENOR 
-                          | COMP_MAYOR 
-                          | COMP_MENOR_IGUAL 
-                          | COMP_MAYOR_IGUAL
-
-<expresion_matematica>  ::= <expresion_matematica> OP_SUMA <termino_matematico>
-                          | <expresion_matematica> OP_RESTA <termino_matematico>
-                          | <termino_matematico>
-
-<termino_matematico>    ::= <termino_matematico> OP_MULT <factor_matematico>
-                          | <termino_matematico> OP_DIV <factor_matematico>
-                          | <factor_matematico>
-
-<factor_matematico>     ::= ID
-                          | LIT_ENTERO
-                          | LIT_RACIONAL
-                          | '(' <expresion_matematica> ')'
-                          | <llamada_funcion>
 
 ```
 
