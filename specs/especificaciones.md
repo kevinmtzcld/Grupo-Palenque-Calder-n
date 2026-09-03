@@ -1,6 +1,6 @@
 ## 1. Alfabeto
 
-Σ = L ∪ D ∪ O ∪ R ∪ S ∪ B
+Σ = L ∪ D ∪ O ∪ S ∪ B
 
 | Clase | Caracteres |
 | :---: | :--- |
