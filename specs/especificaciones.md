@@ -7,7 +7,6 @@
 | **L** | `a – z`, `A – Z` |
 | **D** | `0 – 9` |
 | **O** | `+`, `-`, `*`, `/`, `=`, `<`, `>` |
-| **R** | `$` (utilizado para delimitar racionales) |
 | **S** | `(`, `)`, `{`, `}`, `;`, `:`, `,`, `"` |
 | **B** | espacio, tabulación (`\t`), salto de línea (`\n`)|
 | **OTRO** | cualquier otro carácter → error léxico |
