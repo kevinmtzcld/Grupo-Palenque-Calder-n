@@ -31,27 +31,29 @@ def · principal  · racional · si · sino · mientras · mostrar · retornar
 | **264** | `PR_RETORNAR`      | `retornar`                      |
 | **265** | `ID`               | Identificador (`a`, `acum`)     |
 | **266** | `LIT_RACIONAL`     | Constante racional (`3/4`, `5`) |
-| **267** | `OP_ASIG`          | `=`                             |
-| **268** | `OP_SUMA`          | `+`                             |
-| **269** | `OP_RESTA`         | `-`                             |
-| **270** | `OP_MULT`          | `*`                             |
-| **271** | `OP_DIV`           | `/`                             |
-| **272** | `COMP_MAYOR`       | `>`                             |
-| **273** | `COMP_MENOR`       | `<`                             |
-| **274** | `COMP_MAYOR_IGUAL` | `>=`                            |
-| **275** | `COMP_MENOR_IGUAL` | `<=`                            |
-| **276** | `COMP_IGUAL`       | `==`                            |
-| **277** | `COMP_DISTINTO`    | `!=`                            |
-| **278** | `OP_AND`           | `and`                           |
-| **279** | `OP_OR`            | `or`                            |
-| **280** | `PAR_IZQ`          | `(`                             |
-| **281** | `PAR_DER`          | `)`                             |
-| **282** | `LLAVE_IZQ`        | `{`                             |
-| **283** | `LLAVE_DER`        | `}`                             |
-| **284** | `PUNTO_COMA`       | `;`                             |
-| **285** | `DOS_PUNTOS`       | `:`                             |
-| **286** | `COMA`             | `,`                             |
-| **287** | `COMILLA`          | `"`                             |
+| **267** | `LIT_CADENA`       | Cadena de caracteres (`"Hola"`) |
+| **268** | `OP_ASIG`          | `=`                             |
+| **269** | `OP_SUMA`          | `+`                             |
+| **270** | `OP_RESTA`         | `-`                             |
+| **271** | `OP_MULT`          | `*`                             |
+| **272** | `OP_DIV`           | `/`                             |
+| **273** | `COMP_MAYOR`       | `>`                             |
+| **274** | `COMP_MENOR`       | `<`                             |
+| **275** | `COMP_MAYOR_IGUAL` | `>=`                            |
+| **276** | `COMP_MENOR_IGUAL` | `<=`                            |
+| **277** | `COMP_IGUAL`       | `==`                            |
+| **278** | `COMP_DISTINTO`    | `!=`                            |
+| **279** | `OP_AND`           | `and`                           |
+| **280** | `OP_OR`            | `or`                            |
+| **281** | `PAR_IZQ`          | `(`                             |
+| **282** | `PAR_DER`          | `)`                             |
+| **283** | `LLAVE_IZQ`        | `{`                             |
+| **284** | `LLAVE_DER`        | `}`                             |
+| **285** | `PUNTO_COMA`       | `;`                             |
+| **286** | `DOS_PUNTOS`       | `:`                             |
+| **287** | `COMA`             | `,`                             |
+| **288** | `COMILLA`          | `"`                             |
+
 
 
 
