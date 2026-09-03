@@ -61,31 +61,44 @@ def · principal  · racional · si · sino · mientras · mostrar · retornar
 
 ## 4.PROGRAMA DE EJEMPLO
 ```
-def obtener_bono() {
-    racional bono;
-    bono = $1/2$;
-    mostrar("CALCULANDO bono...");
-    retornar bono;
+racional x,y,z=4/3,calculo,resultado,c=0;
+
+def funX()
+{
+    mostrar("Calculando");
+    calculo=x+y;
+    retornar (calculo);
 }
 
-principal() {
-    racional total;
-    entero usuario_id;
-    cadena mensaje;
+principal()
+{
+    x=9/2;
+    y=9/8;
 
-    usuario_id = 101;
-    mensaje = "PROCESANDO usuario:";
+    resultado=funX();
 
-    mostrar(mensaje);
-    mostrar(usuario_id);
+    si((x>y) and (c<3))
+    {
+        mostrar("x es mayor a y");
 
-    // LLAMADA
-    total = obtener_bono();
-
-    mostrar("total con bono:");
-    mostrar(total);
+        mientras((c<3) or (x<y))
+        {
+            mostrar("valor de c:",c);
+            c=c+1;
+        }
+    }
+    sino
+    {
+        si(x<y)
+        {
+            mostrar("Y es mayor a x");
+        }
+        sino
+        {
+            mostrar("X e y son iguales");
+        }
+    }
 }
-
 ```
 
 
