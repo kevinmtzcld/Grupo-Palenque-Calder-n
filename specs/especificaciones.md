@@ -15,7 +15,7 @@
 será rechazado por el analizador léxico, y generará un error léxico con el número de línea correspondiente**
 
 ## 2.PALABRAS RESERVADAS
-def · principal · entero · racional · cadena · si · sino · mientras · mostrar · retornar
+def · principal  · racional · si · sino · mientras · mostrar · retornar
 
 ## 3. Tabla de tokens
 
