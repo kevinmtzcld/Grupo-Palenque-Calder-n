@@ -175,3 +175,20 @@ principal()
 
 
 
+
+| ESTADO | L | D | / | * | ! | > | < | = | " | + - | ( ) { } ; : , | B | caracter no válido |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| e0 | e1 | e4 | e11 | ef | e14 | e7 | e8 | e9 | e10 | ef | ef | e0 | error |
+| e1 | e1 | e1 | ef | ef | ef | ef | ef | ef | ef | ef | ef | ef | error |
+| e4 | ef | e4 | e5 | ef | ef | ef | ef | ef | ef | ef | ef | ef | error |
+| e5 | error | e6 | error | error | error | error | error | error | error | error | error | error | error |
+| e6 | ef | e6 | ef | ef | ef | ef | ef | ef | ef | ef | ef | ef | error |
+| e7 | ef | ef | ef | ef | ef | ef | ef | ef | ef | ef | ef | ef | error |
+| e8 | ef | ef | ef | ef | ef | ef | ef | ef | ef | ef | ef | ef | error |
+| e9 | ef | ef | ef | ef | ef | ef | ef | ef | ef | ef | ef | ef | error |
+| e10 | e10 | e10 | e10 | e10 | e10 | e10 | e10 | e10 | ef | e10 | e10 | e10 | error |
+| e11 | ef | ef | ef | e12 | ef | ef | ef | ef | ef | ef | ef | ef | error |
+| e12 | e12 | e12 | e12 | e13 | e12 | e12 | e12 | e12 | e12 | e12 | e12 | e12 | error |
+| e13 | e12 | e12 | e0 | e12 | e12 | e12 | e12 | e12 | e12 | e12 | e12 | e12 | error |
+| e14 | error | error | error | error | error | error | ef | error | error | error | error | error | error |
+
