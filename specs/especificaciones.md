@@ -169,8 +169,7 @@ principal()
 
 
 ### AUTÓMATA FINÍTO
-
-<img width="991" height="1034" alt="4b17446d-03af-4933-8fac-8b1903dedc07" src="https://github.com/user-attachments/assets/9b5cbfa4-ad8d-4d8c-b6c7-5f46484bd735" />
+<img width="1005" height="1069" alt="f9b4e580-632c-4ff3-b48b-7b1844588bb5" src="https://github.com/user-attachments/assets/d494ba64-7b55-4601-9bdf-e07aee0bcc90" />
 
 
 
