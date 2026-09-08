@@ -62,6 +62,8 @@ def · principal  · racional · si · sino · mientras · mostrar · retornar
 ## 4.PROGRAMA DE EJEMPLO
 ```
 racional x,y,z=4/3,calculo,resultado,c=0;
+/*INICIO DE VARIABLES
+COMENTARIO*/
 
 def funX()
 {
