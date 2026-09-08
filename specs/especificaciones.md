@@ -174,7 +174,7 @@ principal()
 
 
 
-
+### MATRIZ DE TRANSICIONES
 
 | ESTADO | L | D | / | * | ! | > | < | = | " | + - | ( ) { } ; : , | B | caracter no válido |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
