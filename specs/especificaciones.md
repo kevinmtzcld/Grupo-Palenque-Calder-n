@@ -176,7 +176,7 @@ principal()
 
 ### MATRIZ DE TRANSICIONES
 
-| ESTADO | L | D | / | * | ! | > | < | = | " | + - | ( ) { } ; : , | B | caracter no válido |
+| ESTADO | L | D | / | * | ! | > | < | = | " | + - | ( ) { } ; : , | B, tab | caracter no válido |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | e0 | e1 | e4 | e11 | ef | e14 | e7 | e8 | e9 | e10 | ef | ef | e0 | error |
 | e1 | e1 | e1 | ef | ef | ef | ef | ef | ef | ef | ef | ef | ef | error |
