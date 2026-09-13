@@ -52,7 +52,6 @@ def · principal  · racional · si · sino · mientras · mostrar · retornar
 | **285** | `PUNTO_COMA`       | `;`                             |
 | **286** | `DOS_PUNTOS`       | `:`                             |
 | **287** | `COMA`             | `,`                             |
-| **288** | `COMILLA`          | `"`                             |
 
 
 
@@ -131,7 +130,7 @@ principal()
 <mientras> ::= PR_MIENTRAS PAR_IZQ <condicion> PAR_DER <bloque>
 
 <mostrar> ::= PR_MOSTRAR PAR_IZQ <argumentos_mostrar> PAR_DER PUNTO_COMA
-<argumentos_mostrar> ::= ID | COMILLA LIT_CADENA COMILLA | COMILLA LIT_CADENA COMILLA COMA <lista_ids_mostrar>
+<argumentos_mostrar> ::= ID | LIT_CADENA  |  LIT_CADENA COMA <lista_ids_mostrar>
 <lista_ids_mostrar> ::= ID | ID COMA <lista_ids_mostrar>
 
 <retornar> ::= PR_RETORNAR PAR_IZQ <valor_retorno> PAR_DER PUNTO_COMA
