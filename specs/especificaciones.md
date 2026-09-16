@@ -168,7 +168,7 @@ principal()
 
 
 ### AUTÓMATA FINÍTO
-<img width="1986" height="2259" alt="autom comp pc" src="https://github.com/user-attachments/assets/70eecb16-05bd-466b-83a1-8ec8ae6a8339" />
+<img width="1986" height="2259" alt="autom comp pc drawio" src="https://github.com/user-attachments/assets/5b7adb2b-9d85-4fa4-b18e-1c4cdefa9f60" />
 
 
 
