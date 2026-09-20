@@ -1,4 +1,4 @@
-## 1.DESICIONES GLOBALES
+## 1. DECISIONES GLOBALES
 
 | # | Decisión | Valor |
 | :-: | :--- | :--- |
@@ -8,9 +8,9 @@
 | D4 | Alcance | Único y global: no hay variables locales |
 | D5 | Sensibilidad a mayúsculas | Sí. Total y total son variables distintas |
 | D6 | Longitud máxima de identificador | 20 caracteres; más largo se trunca con advertencia |
-| D7 | Comentarios | Multilínea, delimitados por /* y */. |
+| D7 | Comentarios | Multilínea, delimitados por /* y */ |
 | D8 | Resultado de una comparación | No es un valor. Solo aparece en condiciones |
-| D9 | División por cero | Error en ejecución, con mensaje y cancelación |
+| D9 | División por cero | Error en compilación para literales (ej: 3/0) y en ejecución para expresiones |
 | D10 | Plataforma destino | x86-64, NASM sobre Linux |
 
 
@@ -68,8 +68,7 @@ def · principal  · racional · si · sino · mientras · mostrar · retornar
 | *283* | LLAVE_IZQ        | {                             |
 | *284* | LLAVE_DER        | }                             |
 | *285* | PUNTO_COMA       | ;                             |
-| *286* | DOS_PUNTOS       | :                             |
-| *287* | COMA             | ,                             |
+| *286* | COMA             | ,                             |
 
 
 ## 5. Estructura del programa
