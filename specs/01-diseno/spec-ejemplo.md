@@ -68,7 +68,7 @@ def · principal  · racional · si · sino · mientras · mostrar · retornar
 | *283* | LLAVE_IZQ        | {                             |
 | *284* | LLAVE_DER        | }                             |
 | *285* | PUNTO_COMA       | ;                             |
-| *286* | COMA             | ,                             |
+| *287* | COMA             | ,                             |
 
 
 ## 5. Estructura del programa
