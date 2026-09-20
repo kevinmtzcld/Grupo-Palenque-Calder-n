@@ -84,7 +84,7 @@ Un programa en **Razio** se compone de una sección inicial de declaraciones glo
 
 <programa>::= <declaracion><funciones> PR_PRINCIPAL PAR_IZQ PAR_DER <bloque>
 
-<declaracion> ::= PR_RACIONAL <lista_variables> PUNTO_COMA
+<declaracion> ::= PR_RACIONAL <lista_variables> PUNTO_COMA |lambda
 <lista_variables> ::= <variable> | <lista_variables> COMA <variable>
 <variable> ::= ID | ID OP_ASIG LIT_RACIONAL
 
@@ -101,7 +101,7 @@ Un programa en **Razio** se compone de una sección inicial de declaraciones glo
 <termino> ::= <factor> | <termino> OP_MULT <factor> | <termino> OP_DIV <factor>
 <factor> ::= LIT_RACIONAL | ID | PAR_IZQ <expresion> PAR_DER | ID PAR_IZQ PAR_DER
 
-<si> ::= PR_SI PAR_IZQ <condicion> PAR_DER <bloque> PR_SINO <bloque>
+<si> ::= PR_SI PAR_IZQ <condicion> PAR_DER <bloque> | PR_SI PAR_IZQ <condicion> PAR_DER <bloque> PR_SINO <bloque>
 <mientras> ::= PR_MIENTRAS PAR_IZQ <condicion> PAR_DER <bloque>
 
 <mostrar> ::= PR_MOSTRAR PAR_IZQ <argumentos_mostrar> PAR_DER PUNTO_COMA
@@ -142,7 +142,7 @@ Un programa en **Razio** se compone de una sección inicial de declaraciones glo
 | R1 | Usar un `ID` no declarado es error semántico |
 | R2 | Declarar dos veces el mismo `ID` es error semántico |
 | R3 | Toda variable se inicializa en `0/1` antes de la primera sentencia |
-| R4 | Las constantes se registran en la tabla de símbolos con nombre `_valor` |
+| R4 | ***Las constantes se registran en la tabla de símbolos con nombre `_valor`****?? |
 | R5 | Una constante fuera del rango D2 es error semántico, con línea |
 | R6 | Intentar definir un literal con denominador `0` (ej: `3/0`) es error semántico |
 | R7 | La llamada a una función que se invoque a sí misma (**recursión**) es error semántico |
