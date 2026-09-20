@@ -23,10 +23,10 @@
 | Clase | Caracteres |
 | :---: | :--- |
 | *L* | `a`–`z`, `A`–`Z`|
-| *D* | 0 – 9 |
-| *O* | +, -, *, /, =, <, > !|
-| *S* | (, ), {, }, ;, :, ,, " |
-| *B* | espacio, tabulación (\t), salto de línea (\n)|
+| *D* |`0 – 9` |
+| *O* | `+ - * / = < > !`|
+| *S* |`() {};:,"`|
+| *B* | `espacio, tabulación (\t), salto de línea (\n)`|
 | *OTRO* | cualquier otro carácter → error léxico |
 
 **Cualquier carácter presente en el archivo .txt que no pertenezca a esta unión de conjuntos (por ejemplo: @, #, ~, ?, _, etc.) 
