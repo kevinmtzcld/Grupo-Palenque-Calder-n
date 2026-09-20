@@ -127,7 +127,7 @@ Un programa en **Razio** se compone de una sección inicial de declaraciones glo
 
 <operador_comparacion> ::= COMP_MAYOR | COMP_MENOR | COMP_MAYOR_IGUAL | COMP_MENOR_IGUAL | COMP_IGUAL | COMP_DISTINTO
 
-```bnf
+```
 **Notas sobre la gramática**
 
 * Recursión a izquierda en `<expresion>`, `<termino>`, `<sentencias>`, `<funciones>` y `<lista_variables>`: es la forma que prefiere una herramienta YACC.
