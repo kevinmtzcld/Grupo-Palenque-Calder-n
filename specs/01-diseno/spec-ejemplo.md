@@ -1,4 +1,4 @@
-## 1. DECISIONES GLOBALES
+<img width="1366" height="768" alt="image" src="https://github.com/user-attachments/assets/9b836397-e18e-40f7-ae30-f2af783df0fb" />## 1. DECISIONES GLOBALES
 
 | # | Decisión | Valor |
 | :-: | :--- | :--- |
@@ -81,7 +81,7 @@ Un programa en **Razio** se compone de una sección inicial de declaraciones glo
 
 
 ## 6. GRAMÁTICA
-
+```bnf
 <programa>::= <declaracion><funciones> PR_PRINCIPAL PAR_IZQ PAR_DER <bloque>
 
 <declaracion> ::= PR_RACIONAL <lista_variables> PUNTO_COMA |lambda
@@ -127,7 +127,7 @@ Un programa en **Razio** se compone de una sección inicial de declaraciones glo
 
 <operador_comparacion> ::= COMP_MAYOR | COMP_MENOR | COMP_MAYOR_IGUAL | COMP_MENOR_IGUAL | COMP_IGUAL | COMP_DISTINTO
 
-
+```bnf
 **Notas sobre la gramática**
 
 * Recursión a izquierda en `<expresion>`, `<termino>`, `<sentencias>`, `<funciones>` y `<lista_variables>`: es la forma que prefiere una herramienta YACC.
