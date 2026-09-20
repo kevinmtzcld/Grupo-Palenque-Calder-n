@@ -16,13 +16,6 @@
 
 
 
-
-
-
-
-
-
-
 ## Alfabeto
 
 Σ = L ∪ D ∪ O ∪ S ∪ B
@@ -181,16 +174,8 @@ principal()
 
 
 
-
-
-
-
-
-
-
-
-
-
-
 ### AUTÓMATA FINÍTO
-<img width="1986" height="2259" alt="autom comp pc drawio" src="https://github.com/user-attachments/assets/5b7adb2b-9d85-4fa4-b18e-1c4cdefa9f60" />
+<img width="1986" height="2259" alt="autom comp pc drawio" src="https://github.com/user-attachments/assets/bb5298cd-1c83-4068-a473-6628d1f27fb4" />
+
+
+
