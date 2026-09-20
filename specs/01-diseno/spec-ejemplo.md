@@ -1,4 +1,4 @@
-<img width="1366" height="768" alt="image" src="https://github.com/user-attachments/assets/9b836397-e18e-40f7-ae30-f2af783df0fb" />## 1. DECISIONES GLOBALES
+## 1. DECISIONES GLOBALES
 
 | # | Decisión | Valor |
 | :-: | :--- | :--- |
