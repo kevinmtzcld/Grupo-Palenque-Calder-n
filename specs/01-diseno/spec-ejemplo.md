@@ -170,7 +170,7 @@ Un programa en **Razio** se compone de una sección inicial de declaraciones glo
 
 
 ## 9.PROGRAMA DE EJEMPLO
-""
+```
 racional x,y,z=4/3,calculo,resultado,c=0;
 /*INICIO DE VARIABLES
 COMENTARIO*/
@@ -211,7 +211,7 @@ principal()
         }
     }
 }
-""
+```
 
 
 
