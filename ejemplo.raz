@@ -1,0 +1,40 @@
+racional x,y,z=4/3,calculo,resultado,c=0;
+/*INICIO DE VARIABLES
+COMENTARIO*/
+
+def funX()
+{
+    mostrar("Calculando");
+    calculo=x+y;
+    retornar (calculo);
+}
+
+principal()
+{
+    x=9/2;
+    y=9/8;
+
+    resultado=funX();
+
+    si((x>y) and (c<3))
+    {
+        mostrar("x es mayor a y");
+
+        mientras((c<3) or (x<y))
+        {
+            mostrar("valor de c:",c);
+            c=c+1;
+        }
+    }
+    sino
+    {
+        si(x<y)
+        {
+            mostrar("Y es mayor a x");
+        }
+        sino
+        {
+            mostrar("X e y son iguales");
+        }
+    }
+}
