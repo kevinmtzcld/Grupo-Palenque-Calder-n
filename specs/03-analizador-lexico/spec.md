@@ -76,7 +76,10 @@ Entrada ``, con el estado inicial 0:
 ---
 
 ## 11. Casos de prueba de esta fase
-9.PROGRAMA DE EJEMPLO
+
+### Programa de ejemplo (`ejemplo.raz`)
+
+```c
 racional x,y,z=4/3,calculo,resultado,c=0;
 /*INICIO DE VARIABLES
 COMENTARIO*/
@@ -87,11 +90,14 @@ def funX()
     calculo=x+y;
     retornar (calculo);
 }
+
 principal()
 {
     x=9/2;
     y=9/8;
+
     resultado=funX();
+
     si((x>y) and (c<3))
     {
         mostrar("x es mayor a y");
@@ -115,7 +121,6 @@ principal()
     }
 }
 
-##RESULTADO DEL ANALIZADOR LÉXICO PARA ESTE CÓDIGO
 =================================================================
      INICIANDO ANALIZADOR LÉXICO - COMPILADOR RAZIO (GRUPO C)    
 =================================================================
@@ -256,6 +261,25 @@ principal()
 =================================================================
                 PROCESAMIENTO LÉXICO FINALIZADO                  
 =================================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 | Entrada | Salida esperada | Qué verifica |
 |---|---|---|
