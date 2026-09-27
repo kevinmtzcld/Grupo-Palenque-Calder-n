@@ -1,6 +1,4 @@
-# Bitácora de Desarrollo del Analizador Léxico (Razio)
-
-En este documento se registra la evolución del desarrollo del Analizador Léxico para el lenguaje **Razio**, documentando las iteraciones de trabajo con el modelo de IA (Gemini), los problemas identificados, las decisiones de diseño tomadas y su alineación con las especificaciones técnicas de la cátedra.
+Grupo: Grupo C · Spec de referencia: specs/01-diseno/spec.md · Modelos usados: Gemini
 
 ---
 
