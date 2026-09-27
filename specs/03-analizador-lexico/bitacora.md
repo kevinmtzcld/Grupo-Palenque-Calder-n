@@ -1,5 +1,8 @@
-Grupo: Grupo C · Spec de referencia: specs/01-diseno/spec.md · Modelos usados: Gemini
+# Bitácora de Desarrollo del Analizador Léxico (Razio)
 
+**Grupo:** Grupo C  
+**Spec de referencia:** `specs/01-diseno/spec.md`  
+**Modelos usados:** Gemini
 ---
 
 ## Iteración 0 — Generación inicial de la estructura y reglas del analizador léxico
