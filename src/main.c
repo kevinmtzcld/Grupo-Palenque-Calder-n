@@ -1,45 +1,63 @@
+/********************************************************************************
+ * 1. INCLUSIÓN DE LIBRERÍAS Y CONSTANTES GLOBALES DE CONFIGURACIÓN
+ * Esta sección incluye las librerías estándar de C necesarias para manejo de 
+ * I/O, cadenas, conversión de tipos y clasificación de caracteres.
+ * Define las constantes límite del lenguaje Razio:
+ * - Límite de buffer de cadenas.
+ * - Longitud máxima de identificadores (D6: 20 caracteres).
+ * - Límite superior para enteros con signo de 32 bits (D2).
+ ********************************************************************************/
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 
 #define MAX_BUFFER 256
-#define MAX_ID_LEN 20         /* D6: LONGITUD MÁXIMA DE IDENTIFICADOR EN 20 CARACTERES */
-#define MAX_INT_32 2147483647L /* D2: LÍMITE SUPERIOR DE 32 BITS CON SIGNO */
+#define MAX_ID_LEN 20          /* D6: Longitud máxima de identificador */
+#define MAX_INT_32 2147483647L /* D2: Límite de 32 bits con signo */
 
-/* 1. TABLA DE TOKENS (SECCIÓN 4 DE PARALEXICO.TXT) */
-#define PR_DEF          257
-#define PR_PRINCIPAL    258
-#define PR_RACIONAL     259
-#define PR_SI           260
-#define PR_SINO         261
-#define PR_MIENTRAS     262
-#define PR_MOSTRAR      263
-#define PR_RETORNAR     264
-#define ID              265
-#define LIT_RACIONAL    266
-#define LIT_CADENA      267
-#define OP_ASIG         268
-#define OP_SUMA         269
-#define OP_RESTA        270
-#define OP_MULT         271
-#define OP_DIV          272
-#define COMP_MAYOR      273
-#define COMP_MENOR      274
+/********************************************************************************
+ * 2. TABLA DE TOKENS (CÓDIGOS NUMÉRICOS PARA INTERFAZ CON YACC)
+ * Define las constantes simbólicas numéricas asociadas a cada Token del lenguaje.
+ * Se utilizan códigos a partir de 257 para no colisionar con los caracteres ASCII.
+ ********************************************************************************/
+#define PR_DEF           257
+#define PR_PRINCIPAL     258
+#define PR_RACIONAL      259
+#define PR_SI            260
+#define PR_SINO          261
+#define PR_MIENTRAS      262
+#define PR_MOSTRAR       263
+#define PR_RETORNAR      264
+#define ID               265
+#define LIT_RACIONAL     266
+#define LIT_CADENA       267
+#define OP_ASIG          268
+#define OP_SUMA          269
+#define OP_RESTA         270
+#define OP_MULT          271
+#define OP_DIV           272
+#define COMP_MAYOR       273
+#define COMP_MENOR       274
 #define COMP_MAYOR_IGUAL 275
 #define COMP_MENOR_IGUAL 276
-#define COMP_IGUAL      277
-#define COMP_DISTINTO   278
-#define OP_AND          279
-#define OP_OR           280
-#define PAR_IZQ         281
-#define PAR_DER         282
-#define LLAVE_IZQ       283
-#define LLAVE_DER       284
-#define PUNTO_COMA      285
-#define COMA            286
+#define COMP_IGUAL       277
+#define COMP_DISTINTO    278
+#define OP_AND           279
+#define OP_OR            280
+#define PAR_IZQ          281
+#define PAR_DER          282
+#define LLAVE_IZQ        283
+#define LLAVE_DER        284
+#define PUNTO_COMA       285
+#define COMA             286
 
-/* TABLA DE SÍMBOLOS */
+/********************************************************************************
+ * 3. ESTRUCTURA Y GESTIÓN DE LA TABLA DE SÍMBOLOS
+ * Define la estructura de datos que almacena los identificadores (ID), constantes
+ * racionales y literales de cadena reconocidos por el analizador.
+ * Incluye la función insertar_ts() para evitar duplicados y registrar atributos.
+ ********************************************************************************/
 typedef struct {
     char nombre[MAX_BUFFER];
     char tipo[20];
@@ -50,7 +68,27 @@ typedef struct {
 RegTablaSimbolos tabla_simbolos[500];
 int cant_simbolos = 0;
 
-/* VARIABLES GLOBALES */
+void insertar_ts(const char *nombre, const char *tipo, const char *valor, int longitud) {
+    for (int i = 0; i < cant_simbolos; i++) {
+        if (strcmp(tabla_simbolos[i].nombre, nombre) == 0) return;
+    }
+    if (cant_simbolos < 500) {
+        strcpy(tabla_simbolos[cant_simbolos].nombre, nombre);
+        strcpy(tabla_simbolos[cant_simbolos].tipo, tipo);
+        strcpy(tabla_simbolos[cant_simbolos].valor, valor);
+        tabla_simbolos[cant_simbolos].longitud = longitud;
+        cant_simbolos++;
+    }
+}
+
+/********************************************************************************
+ * 4. VARIABLES GLOBALES DE ESTADO DEL ANALIZADOR LÉXICO
+ * Mantienen el estado interno del scanner durante el procesamiento del archivo:
+ * - Contador de líneas para reporte de errores.
+ * - Puntero al archivo fuente.
+ * - Buffer temporal de caracteres para construir los lexemas.
+ * - Último token identificado y acumulador para control de desbordamiento (D2).
+ ********************************************************************************/
 int num_linea = 1;
 int error_lexico = 0;
 FILE *inputFile = NULL;
@@ -60,7 +98,11 @@ char c_actual;
 int ultimo_token_devuelto = 0;
 long val_num_actual = 0;
 
-/* ALFABETO */
+/********************************************************************************
+ * 5. CLASIFICACIÓN DEL ALFABETO EN EVENTOS (COLUMNAS DE LA MATRIZ)
+ * Mapea el conjunto de caracteres de entrada (Σ) a las columnas numéricas de
+ * la matriz de transiciones del autómata finito determinista.
+ ********************************************************************************/
 typedef enum {
     COL_LETRA = 0, COL_DIGITO, COL_MAS, COL_MENOS, COL_POR, COL_BARRA,
     COL_IGUAL, COL_MENOR, COL_MAYOR, COL_ADMIRACION, COL_PAR_IZQ,
@@ -71,7 +113,36 @@ typedef enum {
 
 typedef void (*AccionSemantica)(void);
 
-/* TRADUCCIÓN DE CÓDIGO DE TOKEN A SU NOMBRE */
+Evento get_evento(int c) {
+    if (isalpha(c)) return COL_LETRA;
+    if (isdigit(c)) return COL_DIGITO;
+    switch (c) {
+        case '+': return COL_MAS;
+        case '-': return COL_MENOS;
+        case '*': return COL_POR;
+        case '/': return COL_BARRA;
+        case '=': return COL_IGUAL;
+        case '<': return COL_MENOR;
+        case '>': return COL_MAYOR;
+        case '!': return COL_ADMIRACION;
+        case '(': return COL_PAR_IZQ;
+        case ')': return COL_PAR_DER;
+        case '{': return COL_LLAVE_IZQ;
+        case '}': return COL_LLAVE_DER;
+        case ';': return COL_PUNTO_COMA;
+        case ':': return COL_DOS_PUNTOS;
+        case ',': return COL_COMA;
+        case '"': return COL_COMILLA;
+        case ' ': case '\t': case '\r': case '\n': return COL_BLANCO;
+        default: return COL_OTRO;
+    }
+}
+
+/********************************************************************************
+ * 6. TRADUCCIÓN DE CÓDIGOS DE TOKEN A CADENAS TEXTUALES
+ * Función auxiliar para dar formato de lectura humana en la consola al emitir
+ * el reporte de compilación del analizador léxico.
+ ********************************************************************************/
 const char* obtener_nombre_token(int codigo) {
     switch (codigo) {
         case PR_DEF: return "PR_DEF";
@@ -108,20 +179,20 @@ const char* obtener_nombre_token(int codigo) {
     }
 }
 
-void insertar_ts(const char *nombre, const char *tipo, const char *valor, int longitud) {
-    for (int i = 0; i < cant_simbolos; i++) {
-        if (strcmp(tabla_simbolos[i].nombre, nombre) == 0) return;
-    }
-    if (cant_simbolos < 500) {
-        strcpy(tabla_simbolos[cant_simbolos].nombre, nombre);
-        strcpy(tabla_simbolos[cant_simbolos].tipo, tipo);
-        strcpy(tabla_simbolos[cant_simbolos].valor, valor);
-        tabla_simbolos[cant_simbolos].longitud = longitud;
-        cant_simbolos++;
-    }
-}
-
-/* ACCIONES SEMÁNTICAS */
+/********************************************************************************
+ * 7. ACCIONES SEMÁNTICAS (FUNCIONES f1 A fe)
+ * Implementa la lógica asociada a las transiciones del autómata:
+ * - f1: Inicializa buffer de ID.
+ * - f2: Inicializa buffer de constantes racionales.
+ * - f3a: Acumula caracteres en ID aplicando regla D6 (truncamiento a 20 chars).
+ * - f3b: Acumula dígitos/barra en racionales con verificación de rango D2 (32 bits).
+ * - f4: Reconoce palabras reservadas o inserta ID en la Tabla de Símbolos.
+ * - f5: Cierra racional, valida división por cero en compilación e inserta en TS.
+ * - f7a, f7b, f7c: Captura de literales de cadena ("...").
+ * - f8: Descarte de comentarios multilínea con limpieza de buffer.
+ * - fn: Función nula para separadores/blancos.
+ * - fe: Captura y reporte de errores léxicos.
+ ********************************************************************************/
 void f1(void) { 
     buf_idx = 0; 
     buffer[buf_idx++] = c_actual; 
@@ -153,7 +224,7 @@ void f3b(void) {
             error_lexico = 1;
         }
     } else if (c_actual == '/') {
-        val_num_actual = 0;
+        val_num_actual = 0; /* Reinicia el acumulador para evaluar el denominador */
     }
 
     if (buf_idx < MAX_BUFFER - 1) { 
@@ -184,7 +255,8 @@ void f4(void) {
 
 void f5(void) {
     char *barra = strchr(buffer, '/');
-    if (barra != NULL && strcmp(barra, "/0") == 0) {
+    /* Evaluación matemática para prevenir divisiones por cero como /0, /00, etc. */
+    if (barra != NULL && atoi(barra + 1) == 0) {
         printf("\n[ERROR LÉXICO/SEMÁNTICO - Línea %d]: División por cero en literal '%s'\n", num_linea, buffer);
         error_lexico = 1;
     }
@@ -218,7 +290,9 @@ void f7c(void) {
 }
 
 void f8(void) {
-    /* Descarte de comentarios */
+    /* Descarte de comentarios: limpia el buffer para no conservar la '/' inicial */
+    buf_idx = 0;
+    buffer[0] = '\0';
 }
 
 void fn(void) { 
@@ -233,7 +307,13 @@ void fe(void) {
     error_lexico = 1; 
 }
 
-/* MATRIZ DE FUNCIONES DE ACCIONES SEMÁNTICAS */
+/********************************************************************************
+ * 8. MATRICES DEL AUTOMÁTA FINITO DETERMINISTA (AFD)
+ * Contiene la implementación en C de las tres matrices del diseño:
+ * - proceso[][]: Matriz de punteros a funciones de acciones semánticas.
+ * - nuevo_estado[][]: Matriz de transiciones de estados (con -2 para retracción fu).
+ * - token_por_estado[]: Mapeo directo entre estado final alcanzado y código del token.
+ ********************************************************************************/
 const AccionSemantica proceso[28][NUM_COLUMNAS] = {
 /* e 0 */ { f1,  f2,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fe,  fn,  f7a, fn,  fe },
 /* e 1 */ { f3a, f3a, f4,  f4,  f4,  f4,  f4,  f4,  f4,  f4,  f4,  f4,  f4,  f4,  f4,  f4,  f4,  f4,  f4,  fe },
@@ -252,7 +332,7 @@ const AccionSemantica proceso[28][NUM_COLUMNAS] = {
 /* e14 */ { fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fe },
 /* e15 */ { fn,  fn,  fn,  fn,  f8,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fe },
 /* e16 */ { f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  fe },
-/* e17 */ { f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  fe },
+/* e17 */ { f8,  f8,  f8,  f8,  f8,  0,   f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  fe },
 /* e18 */ { fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fe },
 /* e19 */ { fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fe },
 /* e20 */ { fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fe },
@@ -265,7 +345,6 @@ const AccionSemantica proceso[28][NUM_COLUMNAS] = {
 /* e27 */ { fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fe }
 };
 
-/* MATRIZ DE TRANSICIÓN DE NUEVOS ESTADOS */
 const int nuevo_estado[28][NUM_COLUMNAS] = {
 /*e0 */ { 1,  4, 25, 26, 27, 15, 11,  9,  7,  2, 21, 22, 23, 24, 18, -1, 19, 13,  0, -1 },
 /*e1 */ { 1,  1, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -1 },
@@ -303,31 +382,14 @@ static const int token_por_estado[28] = {
     281, 282, 283, 284, 269, 270, 271
 };
 
-Evento get_evento(int c) {
-    if (isalpha(c)) return COL_LETRA;
-    if (isdigit(c)) return COL_DIGITO;
-    switch (c) {
-        case '+': return COL_MAS;
-        case '-': return COL_MENOS;
-        case '*': return COL_POR;
-        case '/': return COL_BARRA;
-        case '=': return COL_IGUAL;
-        case '<': return COL_MENOR;
-        case '>': return COL_MAYOR;
-        case '!': return COL_ADMIRACION;
-        case '(': return COL_PAR_IZQ;
-        case ')': return COL_PAR_DER;
-        case '{': return COL_LLAVE_IZQ;
-        case '}': return COL_LLAVE_DER;
-        case ';': return COL_PUNTO_COMA;
-        case ':': return COL_DOS_PUNTOS;
-        case ',': return COL_COMA;
-        case '"': return COL_COMILLA;
-        case ' ': case '\t': case '\r': case '\n': return COL_BLANCO;
-        default: return COL_OTRO;
-    }
-}
-
+/********************************************************************************
+ * 9. MOTOR DEL ANALIZADOR LÉXICO (FUNCIÓN yylex)
+ * Función principal que consume el archivo carácter a carácter (fgetc):
+ * - Aplica el evento actual a las matrices de transiciones.
+ * - Ejecuta la acción semántica correspondiente.
+ * - Soporta retracción de un carácter (ungetc) en Lookahead y ajusta la línea.
+ * - Controla el cierre de token al detectar fin de archivo (EOF).
+ ********************************************************************************/
 int yylex(void) {
     int estado = 0;
     int columna;
@@ -364,9 +426,26 @@ int yylex(void) {
             estado = est_sig;
         }
     }
+
+    /* Manejo de fin de archivo (EOF) si un token no se cerró con salto de línea/espacio */
+    if (estado != 0) {
+        columna = COL_BLANCO;
+        (*proceso[estado][columna])();
+        int est_sig = nuevo_estado[estado][columna];
+        if (est_sig == -2) {
+            if (ultimo_token_devuelto != 0) return ultimo_token_devuelto;
+            return token_por_estado[estado];
+        }
+    }
+
     return 0;
 }
 
+/********************************************************************************
+ * 10. EXPORTACIÓN DE LA TABLA DE SÍMBOLOS
+ * Muestra por consola y graba en el archivo plano "tabla_simbolos.txt" la
+ * estructura final recopilada durante el análisis del código fuente.
+ ********************************************************************************/
 void exportarTS(void) {
     FILE *f_ts = fopen("tabla_simbolos.txt", "w");
     
@@ -402,6 +481,12 @@ void exportarTS(void) {
     }
 }
 
+/********************************************************************************
+ * 11. PUNTO DE ENTRADA Y PRUEBA (FUNCIÓN main)
+ * Abre el programa fuente ("ejemplo.raz"), ejecuta el scanner en bucle emitiendo
+ * cada token reconocido hasta llegar al final del archivo, e invoca la
+ * exportación de la Tabla de Símbolos si no ocurrieron errores léxicos.
+ ********************************************************************************/
 int main(int argc, char *argv[]) {
     if ((inputFile = fopen("ejemplo.raz", "r")) == NULL) {
         printf("Error al abrir el archivo 'ejemplo.raz'\n");
@@ -409,7 +494,7 @@ int main(int argc, char *argv[]) {
     }
 
     printf("=================================================================================\n");
-    printf("           REPORTE DE ANALIZADOR LÉXICO - COMPILADOR RAZIO (GRUPO C)            \n");
+    printf("           REPORTE DE ANALIZADOR LÉXICO - COMPILADOR RAZIO (GRUPO C)             \n");
     printf("=================================================================================\n");
     printf("%-8s | %-18s | %-8s | %-30s\n", "LÍNEA", "TOKEN", "CÓDIGO", "LEXEMA");
     printf("---------------------------------------------------------------------------------\n");
