@@ -11,7 +11,7 @@
 | D7 | Comentarios | Multilínea, delimitados por /* y */ |
 | D8 | Resultado de una comparación | No es un valor. Solo aparece en condiciones |
 | D9 | División por cero | Error en compilación para literales (ej: 3/0) y en ejecución para expresiones |
-| D10 | Plataforma destino | x86-64, NASM sobre Linux |
+| D10 | Plataforma destino | x86-64, NASM sobre Windows |
 
 
 
