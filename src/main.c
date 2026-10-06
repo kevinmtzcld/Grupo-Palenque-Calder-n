@@ -100,7 +100,7 @@ long val_num_actual = 0;
 
 /********************************************************************************
  * 5. CLASIFICACIÓN DEL ALFABETO EN EVENTOS (COLUMNAS DE LA MATRIZ)
- * Mapea el conjunto de caracteres de entrada (Σ) a las columnas numéricas de
+ * Mapea el conjunto de caracteres de entrada (S) a las columnas numéricas de
  * la matriz de transiciones del autómata finito determinista.
  ********************************************************************************/
 typedef enum {
@@ -487,6 +487,9 @@ void exportarTS(void) {
  * cada token reconocido hasta llegar al final del archivo, e invoca la
  * exportación de la Tabla de Símbolos si no ocurrieron errores léxicos.
  ********************************************************************************/
+ /* COMENTADO PORQUE AHORA EL MAIN LO CONTROLA BISON (a. sintáctico)
+
+ 
 int main(int argc, char *argv[]) {
     if ((inputFile = fopen("ejemplo.raz", "r")) == NULL) {
         printf("Error al abrir el archivo 'ejemplo.raz'\n");
@@ -522,3 +525,4 @@ int main(int argc, char *argv[]) {
 
     return 0;
 }
+*/
