@@ -384,62 +384,96 @@ static const int token_por_estado[28] = {
 
 /********************************************************************************
  * 9. MOTOR DEL ANALIZADOR LÉXICO (FUNCIÓN yylex)
- * Función principal que consume el archivo carácter a carácter (fgetc):
- * - Aplica el evento actual a las matrices de transiciones.
- * - Ejecuta la acción semántica correspondiente.
- * - Soporta retracción de un carácter (ungetc) en Lookahead y ajusta la línea.
- * - Controla el cierre de token al detectar fin de archivo (EOF).
+ * Estructura de Doble Bucle (Basada en la arquitectura de 3 Matrices de AFD):
+ * - Bucle Externo: Avanza hasta reconocer 1 token o llegar al fin de archivo (EOF).
+ * - Bucle Interno: Camina por el autómata carácter por carácter consumiendo la matriz.
+ * - Retracción: Devuelve el último carácter (Lookahead) al archivo al salir del autómata.
+ * - Clasificación M3: Asigna el token final alcanzado y resuelve la ambigüedad ID/PR.
  ********************************************************************************/
 int yylex(void) {
-    int estado = 0;
-    int columna;
     int c;
+    int estado, estado_ant, columna;
+    int token_reconocido = 0;
 
-    ultimo_token_devuelto = 0;
-    buf_idx = 0;
-    buffer[0] = '\0';
-
+    /* --------------------------------------------------------------------------
+     * 1. BUCLE EXTERNO: Controla la lectura general del archivo.
+     * Cada iteración completa de este bucle debe reconocer y retornar UN TOKEN.
+     * -------------------------------------------------------------------------- */
     while ((c = fgetc(inputFile)) != EOF) {
-        c_actual = (char)c;
-        if (c == '\n') num_linea++;
+        
+        /* Omitir espacios en blanco, tabulaciones y saltos de línea iniciales */
+        if (c == ' ' || c == '\t' || c == '\r') continue;
+        if (c == '\n') { 
+            num_linea++; 
+            continue; 
+        }
 
-        columna = get_evento(c);
+        /* Inicialización del estado del autómata para empezar a construir un nuevo lexema */
+        estado = 0;
+        estado_ant = 0;
+        buf_idx = 0;
+        buffer[0] = '\0';
 
-        (*proceso[estado][columna])();
+        /* --------------------------------------------------------------------------
+         * 2. BUCLE INTERNO: El caminante del autómata (Caminata de Transiciones).
+         * Consume carácter por carácter usando M1 (nuevo_estado) y M2 (proceso)
+         * hasta chocar contra un Estado de Parada (estado < 0) o el fin de archivo.
+         * -------------------------------------------------------------------------- */
+        while (estado >= 0 && c != EOF) {
+            c_actual = (char)c;
+            columna = get_evento(c);
 
-        int est_sig = nuevo_estado[estado][columna];
+            /* MATRIZ M2 (proceso): Ejecuta la acción semántica asociada */
+            (*proceso[estado][columna])();
 
-        if (est_sig == -2) {
-            ungetc(c, inputFile);
-            if (c == '\n') num_linea--;
+            /* Guarda el estado actual antes de saltar (necesario para consultar M3 al salir) */
+            estado_ant = estado;
+            
+            /* MATRIZ M1 (nuevo_estado): Transición hacia el siguiente estado del autómata */
+            estado = nuevo_estado[estado][columna];
 
-            if (ultimo_token_devuelto != 0) {
-                return ultimo_token_devuelto;
+            /* Si el autómata no frenó (no llegó a estado negativo), lee el siguiente carácter */
+            if (estado >= 0) {
+                c = fgetc(inputFile);
             }
-            return token_por_estado[estado];
+        }
 
-        } else if (est_sig == -1) {
-            estado = 0;
-            buf_idx = 0;
-            buffer[0] = '\0';
-        } else {
-            estado = est_sig;
+        /* --------------------------------------------------------------------------
+         * 3. RETRACCIÓN (LOOKAHEAD): 
+         * Al salir del bucle interno, 'c' contiene el carácter que provocó la parada
+         * (el que no pertenecía al token actual). Se devuelve al archivo con ungetc.
+         * -------------------------------------------------------------------------- */
+        if (c != EOF) {
+            ungetc(c, inputFile);
+            if (c == '\n') num_linea--; /* Deshace el conteo si se leyó un salto de línea de más */
+        }
+
+        /* --------------------------------------------------------------------------
+         * 4. CONSULTA EN MATRIZ M3 (token_por_estado):
+         * Obtiene el código de Token asociado al último estado válido alcanzado (estado_ant).
+         * -------------------------------------------------------------------------- */
+        token_reconocido = token_por_estado[estado_ant];
+
+        /* --------------------------------------------------------------------------
+         * 5. RESOLUCIÓN DE AMBIGÜEDAD (Palabra Reservada vs Identificador):
+         * Si M3 indica que se llegó a un estado de ID, se ejecuta la verificación 
+         * en la Tabla de Símbolos / Diccionario para determinar si el lexema es una PR.
+         * -------------------------------------------------------------------------- */
+        if (token_reconocido == ID) {
+            f4(); /* f4 busca si 'buffer' es palabra reservada o ID y asigna ultimo_token_devuelto */
+            return ultimo_token_devuelto;
+        }
+
+        /* Retorna el token identificado para ser consumido por el Sintáctico (Bison) */
+        if (token_reconocido != 0) {
+            return token_reconocido;
         }
     }
 
-    /* Manejo de fin de archivo (EOF) si un token no se cerró con salto de línea/espacio */
-    if (estado != 0) {
-        columna = COL_BLANCO;
-        (*proceso[estado][columna])();
-        int est_sig = nuevo_estado[estado][columna];
-        if (est_sig == -2) {
-            if (ultimo_token_devuelto != 0) return ultimo_token_devuelto;
-            return token_por_estado[estado];
-        }
-    }
-
+    /* Fin de archivo alcanzado */
     return 0;
 }
+
 
 /********************************************************************************
  * 10. EXPORTACIÓN DE LA TABLA DE SÍMBOLOS
