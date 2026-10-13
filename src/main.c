@@ -13,11 +13,11 @@
 #include <ctype.h>
 
 #define MAX_BUFFER 256
-#define MAX_ID_LEN 20          /* D6: Longitud máxima de identificador */
-#define MAX_INT_32 2147483647L /* D2: Límite de 32 bits con signo */
+#define MAX_ID_LEN 20               /* D6: Longitud máxima de identificador */
+#define MAX_INT_32 2147483647LL     /* D2: Límite de 32 bits con signo (64-bit safe) */
 
 /********************************************************************************
- * 2. TABLA DE TOKENS (CÓDIGOS NUMÉRICOS PARA INTERFAZ CON YACC)
+ * 2. TABLA DE TOKENS (CÓDIGOS NUMÉRICOS PARA INTERFAZ CON YACC/BISON)
  * Define las constantes simbólicas numéricas asociadas a cada Token del lenguaje.
  * Se utilizan códigos a partir de 257 para no colisionar con los caracteres ASCII.
  ********************************************************************************/
@@ -96,7 +96,7 @@ char buffer[MAX_BUFFER];
 int buf_idx = 0;
 char c_actual;
 int ultimo_token_devuelto = 0;
-long val_num_actual = 0;
+long long val_num_actual = 0;
 
 /********************************************************************************
  * 5. CLASIFICACIÓN DEL ALFABETO EN EVENTOS (COLUMNAS DE LA MATRIZ)
@@ -190,6 +190,7 @@ const char* obtener_nombre_token(int codigo) {
  * - f5: Cierra racional, valida división por cero en compilación e inserta en TS.
  * - f7a, f7b, f7c: Captura de literales de cadena ("...").
  * - f8: Descarte de comentarios multilínea con limpieza de buffer.
+ * - fa: Acumulación explícita del 2do carácter en operadores compuestos (==, !=, etc.).
  * - fn: Función nula para separadores/blancos.
  * - fe: Captura y reporte de errores léxicos.
  ********************************************************************************/
@@ -218,13 +219,16 @@ void f3a(void) {
 
 void f3b(void) { 
     if (isdigit(c_actual)) {
-        val_num_actual = val_num_actual * 10 + (c_actual - '0');
-        if (val_num_actual > MAX_INT_32) {
+        long long digito = c_actual - '0';
+        if (val_num_actual <= (MAX_INT_32 - digito) / 10) {
+            val_num_actual = val_num_actual * 10 + digito;
+        } else {
+            val_num_actual = MAX_INT_32 + 1LL; /* Fuerza el estado de overflow sin desbordar C */
             printf("\n[ERROR LÉXICO - Línea %d]: Overflow en constante '%s%c' (Excede 32 bits).\n", num_linea, buffer, c_actual);
             error_lexico = 1;
         }
     } else if (c_actual == '/') {
-        val_num_actual = 0; /* Reinicia el acumulador para evaluar el denominador */
+        val_num_actual = 0; /* Reinicia para evaluar el denominador */
     }
 
     if (buf_idx < MAX_BUFFER - 1) { 
@@ -295,6 +299,14 @@ void f8(void) {
     buffer[0] = '\0';
 }
 
+void fa(void) {
+    /* Acumula el segundo carácter en operadores compuestos como ==, !=, >=, <= */
+    if (buf_idx < MAX_BUFFER - 1) {
+        buffer[buf_idx++] = c_actual;
+        buffer[buf_idx] = '\0';
+    }
+}
+
 void fn(void) { 
     if (buf_idx == 0 && c_actual != ' ' && c_actual != '\t' && c_actual != '\r' && c_actual != '\n') {
         buffer[buf_idx++] = c_actual;
@@ -311,28 +323,28 @@ void fe(void) {
  * 8. MATRICES DEL AUTOMÁTA FINITO DETERMINISTA (AFD)
  * Contiene la implementación en C de las tres matrices del diseño:
  * - proceso[][]: Matriz de punteros a funciones de acciones semánticas.
- * - nuevo_estado[][]: Matriz de transiciones de estados (con -2 para retracción fu).
+ * - nuevo_estado[][]: Matriz de transiciones de estados (-1 para error/parada, -2 para retracción).
  * - token_por_estado[]: Mapeo directo entre estado final alcanzado y código del token.
  ********************************************************************************/
 const AccionSemantica proceso[28][NUM_COLUMNAS] = {
 /* e 0 */ { f1,  f2,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fe,  fn,  f7a, fn,  fe },
 /* e 1 */ { f3a, f3a, f4,  f4,  f4,  f4,  f4,  f4,  f4,  f4,  f4,  f4,  f4,  f4,  f4,  f4,  f4,  f4,  f4,  fe },
-/* e 2 */ { fe,  fe,  fe,  fe,  fe,  fe,  fn,  fe,  fe,  fe,  fe,  fe,  fe,  fe,  fe,  fe,  fe,  fe,  fe,  fe },
+/* e 2 */ { fe,  fe,  fe,  fe,  fe,  fe,  fa,  fe,  fe,  fe,  fe,  fe,  fe,  fe,  fe,  fe,  fe,  fe,  fe,  fe },
 /* e 3 */ { fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fe },
 /* e 4 */ { f5,  f3b, f5,  f5,  f5,  f3b, f5,  f5,  f5,  f5,  f5,  f5,  f5,  f5,  f5,  f5,  f5,  f5,  f5,  fe },
 /* e 5 */ { fe,  f3b, fe,  fe,  fe,  fe,  fe,  fe,  fe,  fe,  fe,  fe,  fe,  fe,  fe,  fe,  fe,  fe,  fe,  fe },
 /* e 6 */ { f5,  f3b, f5,  f5,  f5,  f5,  f5,  f5,  f5,  f5,  f5,  f5,  f5,  f5,  f5,  f5,  f5,  f5,  f5,  fe },
-/* e 7 */ { fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fe },
+/* e 7 */ { fn,  fn,  fn,  fn,  fn,  fn,  fa,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fe },
 /* e 8 */ { fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fe },
-/* e 9 */ { fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fe },
+/* e 9 */ { fn,  fn,  fn,  fn,  fn,  fn,  fa,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fe },
 /* e10 */ { fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fe },
-/* e11 */ { fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fe },
+/* e11 */ { fn,  fn,  fn,  fn,  fn,  fn,  fa,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fe },
 /* e12 */ { fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fe },
-/* e13 */ { f7b, f7b, f7b, f7b, f7b, f7b, f7b, f7b, f7b, f7b, f7b, f7b, f7b, f7b, f7b, f7b, f7b, f7c, f7b, fe },
+/* e13 */ { f7b, f7b, f7b, f7b, f7b, f7b, f7b, f7b, f7b, f7b, f7b, f7b, f7b, f7b, f7b, f7b, f7b, f7c, f7b, fe }, /* COL_OTRO -> fe */
 /* e14 */ { fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fe },
 /* e15 */ { fn,  fn,  fn,  fn,  f8,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fe },
-/* e16 */ { f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  fe },
-/* e17 */ { f8,  f8,  f8,  f8,  f8,  0,   f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  fe },
+/* e16 */ { f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8 },
+/* e17 */ { f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8 },
 /* e18 */ { fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fe },
 /* e19 */ { fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fe },
 /* e20 */ { fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fe },
@@ -359,11 +371,11 @@ const int nuevo_estado[28][NUM_COLUMNAS] = {
 /*e10*/ {-2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -1 },
 /*e11*/ {-2, -2, -2, -2, -2, -2, 12, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -1 },
 /*e12*/ {-2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -1 },
-/*e13*/ {13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 14, 13, 13 },
+/*e13*/ {13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 14, 13, -1 }, /* COL_OTRO -> -1 */
 /*e14*/ {-2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -1 },
 /*e15*/ {-2, -2, -2, -2, 16, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -1 },
 /*e16*/ {16, 16, 16, 16, 17, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16 },
-/*e17*/ {16, 16, 16, 16, 16,  0, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16 },
+/*e17*/ {16, 16, 16, 16, 17,  0, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16 },
 /*e18*/ {-2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -1 },
 /*e19*/ {-2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -1 },
 /*e20*/ { 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0 },
@@ -435,36 +447,50 @@ int yylex(void) {
             /* Si el autómata no frenó (no llegó a estado negativo), lee el siguiente carácter */
             if (estado >= 0) {
                 c = fgetc(inputFile);
+                if (c == '\n') num_linea++; /* Sincroniza contador de líneas en lecturas multilínea */
             }
         }
 
+        /* Si ocurrió un error en estado 0 o en medio de una cadena (e13 + COL_OTRO), ignora el carácter */
+        if (estado == -1 && estado_ant == 0) {
+            continue;
+        }
+
         /* --------------------------------------------------------------------------
-         * 3. RETRACCIÓN (LOOKAHEAD): 
-         * Al salir del bucle interno, 'c' contiene el carácter que provocó la parada
-         * (el que no pertenecía al token actual). Se devuelve al archivo con ungetc.
+         * 3. RETRACCIÓN Y MANEJO DE EOF:
          * -------------------------------------------------------------------------- */
-        if (c != EOF) {
+        if (c == EOF && estado > 0) {
+            /* Detecta cadenas o comentarios que no fueron cerrados antes de terminar el archivo */
+            if (estado == 13) {
+                printf("\n[ERROR LÉXICO - Línea %d]: Literal cadena sin cerrar en fin de archivo.\n", num_linea);
+                error_lexico = 1;
+            } else if (estado == 16 || estado == 17) {
+                printf("\n[ERROR LÉXICO - Línea %d]: Comentario multilínea sin cerrar en fin de archivo.\n", num_linea);
+                error_lexico = 1;
+            }
+
+            c_actual = ' ';
+            (*proceso[estado][COL_BLANCO])();
+            estado_ant = estado; /* Captura el estado real de cierre */
+        } else if (c != EOF) {
             ungetc(c, inputFile);
-            if (c == '\n') num_linea--; /* Deshace el conteo si se leyó un salto de línea de más */
+            if (c == '\n') num_linea--; /* Deshace exceso de conteo por lookahead */
         }
 
         /* --------------------------------------------------------------------------
          * 4. CONSULTA EN MATRIZ M3 (token_por_estado):
-         * Obtiene el código de Token asociado al último estado válido alcanzado (estado_ant).
+         * Obtiene el código de Token asociado al último estado válido alcanzado.
          * -------------------------------------------------------------------------- */
         token_reconocido = token_por_estado[estado_ant];
 
         /* --------------------------------------------------------------------------
          * 5. RESOLUCIÓN DE AMBIGÜEDAD (Palabra Reservada vs Identificador):
-         * Si M3 indica que se llegó a un estado de ID, se ejecuta la verificación 
-         * en la Tabla de Símbolos / Diccionario para determinar si el lexema es una PR.
          * -------------------------------------------------------------------------- */
         if (token_reconocido == ID) {
-            f4(); /* f4 busca si 'buffer' es palabra reservada o ID y asigna ultimo_token_devuelto */
+            f4(); /* Determina si es Palabra Reservada o ID y actualiza ultimo_token_devuelto */
             return ultimo_token_devuelto;
         }
 
-        /* Retorna el token identificado para ser consumido por el Sintáctico (Bison) */
         if (token_reconocido != 0) {
             return token_reconocido;
         }
@@ -473,7 +499,6 @@ int yylex(void) {
     /* Fin de archivo alcanzado */
     return 0;
 }
-
 
 /********************************************************************************
  * 10. EXPORTACIÓN DE LA TABLA DE SÍMBOLOS
@@ -520,10 +545,7 @@ void exportarTS(void) {
  * Abre el programa fuente ("ejemplo.raz"), ejecuta el scanner en bucle emitiendo
  * cada token reconocido hasta llegar al final del archivo, e invoca la
  * exportación de la Tabla de Símbolos si no ocurrieron errores léxicos.
- ********************************************************************************/
- /* COMENTADO PORQUE AHORA EL MAIN LO CONTROLA BISON (a. sintáctico)
-
- 
+ ********************************************************************************/ 
 int main(int argc, char *argv[]) {
     if ((inputFile = fopen("ejemplo.raz", "r")) == NULL) {
         printf("Error al abrir el archivo 'ejemplo.raz'\n");
@@ -559,4 +581,3 @@ int main(int argc, char *argv[]) {
 
     return 0;
 }
-*/
