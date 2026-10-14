@@ -98,11 +98,16 @@ char c_actual;
 int ultimo_token_devuelto = 0;
 long long val_num_actual = 0;
 
+
 /********************************************************************************
  * 5. CLASIFICACIÓN DEL ALFABETO EN EVENTOS (COLUMNAS DE LA MATRIZ)
  * Mapea el conjunto de caracteres de entrada (S) a las columnas numéricas de
  * la matriz de transiciones del autómata finito determinista.
  ********************************************************************************/
+
+/* 1. Mapeo del alfabeto a columnas (0 a 19):
+ * Define los números de columna de las matrices M1 (nuevo estado) y M2 (acción semántica).
+ * NUM_COLUMNAS fija automáticamente en 20 el ancho total de las matrices. */
 typedef enum {
     COL_LETRA = 0, COL_DIGITO, COL_MAS, COL_MENOS, COL_POR, COL_BARRA,
     COL_IGUAL, COL_MENOR, COL_MAYOR, COL_ADMIRACION, COL_PAR_IZQ,
@@ -111,8 +116,14 @@ typedef enum {
     NUM_COLUMNAS
 } Evento;
 
+/* 2. Puntero a función semántica:
+ * Permite almacenar funciones sin retorno ni parámetros (void f(void)) en la matriz M2
+ * para ejecutarlas dinámicamente según el estado y carácter leído. */
 typedef void (*AccionSemantica)(void);
 
+/* 3. Traductor de caracteres a columna:
+ * Recibe el carácter leído del archivo (c) y devuelve su número de columna correspondiente
+ * para consultar M1 y M2. Todo carácter fuera del alfabeto cae en COL_OTRO (19). */
 Evento get_evento(int c) {
     if (isalpha(c)) return COL_LETRA;
     if (isdigit(c)) return COL_DIGITO;
@@ -138,10 +149,13 @@ Evento get_evento(int c) {
     }
 }
 
+
+
 /********************************************************************************
  * 6. TRADUCCIÓN DE CÓDIGOS DE TOKEN A CADENAS TEXTUALES
- * Función auxiliar para dar formato de lectura humana en la consola al emitir
- * el reporte de compilación del analizador léxico.
+ /* Traduce el código numérico interno del token (ej: 257) a su equivalente en texto (ej: "PR_DEF")
+ * para mostrarlo de forma legible en la tabla del reporte de consola. */
+ //cada caso está definido en el inicio de este codigo con "define" en la tabla de tokens
  ********************************************************************************/
 const char* obtener_nombre_token(int codigo) {
     switch (codigo) {
@@ -299,13 +313,7 @@ void f8(void) {
     buffer[0] = '\0';
 }
 
-void fa(void) {
-    /* Acumula el segundo carácter en operadores compuestos como ==, !=, >=, <= */
-    if (buf_idx < MAX_BUFFER - 1) {
-        buffer[buf_idx++] = c_actual;
-        buffer[buf_idx] = '\0';
-    }
-}
+
 
 void fn(void) { 
     if (buf_idx == 0 && c_actual != ' ' && c_actual != '\t' && c_actual != '\r' && c_actual != '\n') {
@@ -329,22 +337,22 @@ void fe(void) {
 const AccionSemantica proceso[28][NUM_COLUMNAS] = {
 /* e 0 */ { f1,  f2,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fe,  fn,  f7a, fn,  fe },
 /* e 1 */ { f3a, f3a, f4,  f4,  f4,  f4,  f4,  f4,  f4,  f4,  f4,  f4,  f4,  f4,  f4,  f4,  f4,  f4,  f4,  fe },
-/* e 2 */ { fe,  fe,  fe,  fe,  fe,  fe,  fa,  fe,  fe,  fe,  fe,  fe,  fe,  fe,  fe,  fe,  fe,  fe,  fe,  fe },
+/* e 2 */ { fe,  fe,  fe,  fe,  fe,  fe,  fn,  fe,  fe,  fe,  fe,  fe,  fe,  fe,  fe,  fe,  fe,  fe,  fe,  fe },
 /* e 3 */ { fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fe },
 /* e 4 */ { f5,  f3b, f5,  f5,  f5,  f3b, f5,  f5,  f5,  f5,  f5,  f5,  f5,  f5,  f5,  f5,  f5,  f5,  f5,  fe },
 /* e 5 */ { fe,  f3b, fe,  fe,  fe,  fe,  fe,  fe,  fe,  fe,  fe,  fe,  fe,  fe,  fe,  fe,  fe,  fe,  fe,  fe },
 /* e 6 */ { f5,  f3b, f5,  f5,  f5,  f5,  f5,  f5,  f5,  f5,  f5,  f5,  f5,  f5,  f5,  f5,  f5,  f5,  f5,  fe },
-/* e 7 */ { fn,  fn,  fn,  fn,  fn,  fn,  fa,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fe },
+/* e 7 */ { fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fe },
 /* e 8 */ { fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fe },
-/* e 9 */ { fn,  fn,  fn,  fn,  fn,  fn,  fa,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fe },
+/* e 9 */ { fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fe },
 /* e10 */ { fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fe },
-/* e11 */ { fn,  fn,  fn,  fn,  fn,  fn,  fa,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fe },
+/* e11 */ { fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fe },
 /* e12 */ { fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fe },
 /* e13 */ { f7b, f7b, f7b, f7b, f7b, f7b, f7b, f7b, f7b, f7b, f7b, f7b, f7b, f7b, f7b, f7b, f7b, f7c, f7b, fe }, /* COL_OTRO -> fe */
 /* e14 */ { fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fe },
 /* e15 */ { fn,  fn,  fn,  fn,  f8,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fe },
-/* e16 */ { f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8 },
-/* e17 */ { f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8 },
+/* e16 */ { f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  fe },
+/* e17 */ { f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  f8,  fe },
 /* e18 */ { fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fe },
 /* e19 */ { fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fe },
 /* e20 */ { fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fe },
@@ -374,8 +382,8 @@ const int nuevo_estado[28][NUM_COLUMNAS] = {
 /*e13*/ {13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 14, 13, -1 }, /* COL_OTRO -> -1 */
 /*e14*/ {-2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -1 },
 /*e15*/ {-2, -2, -2, -2, 16, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -1 },
-/*e16*/ {16, 16, 16, 16, 17, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16 },
-/*e17*/ {16, 16, 16, 16, 17,  0, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16 },
+/*e16*/ {16, 16, 16, 16, 17, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, -1 },
+/*e17*/ {16, 16, 16, 16, 16,  0, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, -1 },
 /*e18*/ {-2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -1 },
 /*e19*/ {-2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -1 },
 /*e20*/ { 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0 },
@@ -388,11 +396,14 @@ const int nuevo_estado[28][NUM_COLUMNAS] = {
 /*e27*/ {-2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -1 }
 };
 
+/* MATRIZ M3: Mapea el último estado del autómata (índice 0-27) con el código de token reconocido (265-286). 
+ * Los valores en 0 representan estados intermedios (no finales). */
 static const int token_por_estado[28] = {
     0, 265, 0, 278, 266, 0, 266, 273, 275, 274, 276,
     268, 277, 0, 267, 272, 0, 0, 285, 286, 0, 
     281, 282, 283, 284, 269, 270, 271
 };
+
 
 /********************************************************************************
  * 9. MOTOR DEL ANALIZADOR LÉXICO (FUNCIÓN yylex)
@@ -432,8 +443,8 @@ int yylex(void) {
          * hasta chocar contra un Estado de Parada (estado < 0) o el fin de archivo.
          * -------------------------------------------------------------------------- */
         while (estado >= 0 && c != EOF) {
-            c_actual = (char)c;
-            columna = get_evento(c);
+            c_actual = (char)c;       // Guarda el carácter actual.
+			columna = get_evento(c);  // Obtiene la columna correspondiente al carácter.
 
             /* MATRIZ M2 (proceso): Ejecuta la acción semántica asociada */
             (*proceso[estado][columna])();
@@ -445,8 +456,8 @@ int yylex(void) {
             estado = nuevo_estado[estado][columna];
 
             /* Si el autómata no frenó (no llegó a estado negativo), lee el siguiente carácter */
-            if (estado >= 0) {
-                c = fgetc(inputFile);
+            if (estado >= 0) {	// Si el autómata puede continuar
+                c = fgetc(inputFile);	// Lee el siguiente carácter
                 if (c == '\n') num_linea++; /* Sincroniza contador de líneas en lecturas multilínea */
             }
         }
@@ -459,23 +470,27 @@ int yylex(void) {
         /* --------------------------------------------------------------------------
          * 3. RETRACCIÓN Y MANEJO DE EOF:
          * -------------------------------------------------------------------------- */
-        if (c == EOF && estado > 0) {
+        if (c == EOF && estado > 0) {	// Si termina el archivo dentro de un lexema
             /* Detecta cadenas o comentarios que no fueron cerrados antes de terminar el archivo */
-            if (estado == 13) {
+            if (estado == 13) { // Si quedó una cadena sin cerrar
                 printf("\n[ERROR LÉXICO - Línea %d]: Literal cadena sin cerrar en fin de archivo.\n", num_linea);
-                error_lexico = 1;
-            } else if (estado == 16 || estado == 17) {
+                error_lexico = 1; // Marca el error léxico
+            } else if (estado == 16 || estado == 17) { // Si quedó un comentario sin cerrar
                 printf("\n[ERROR LÉXICO - Línea %d]: Comentario multilínea sin cerrar en fin de archivo.\n", num_linea);
-                error_lexico = 1;
+                error_lexico = 1; // Marca el error léxico
             }
-
-            c_actual = ' ';
-            (*proceso[estado][COL_BLANCO])();
-            estado_ant = estado; /* Captura el estado real de cierre */
-        } else if (c != EOF) {
-            ungetc(c, inputFile);
-            if (c == '\n') num_linea--; /* Deshace exceso de conteo por lookahead */
-        }
+           c_actual = ' '; // Simula un espacio para finalizar el procesamiento del lexema
+           
+		   (*proceso[estado][COL_BLANCO])(); // Ejecuta la acción semántica correspondiente al espacio
+		
+			estado_ant = estado; // Guarda el estado anterior para utilizarlo después
+			}			
+			
+		/// RETRACCIÓN DE ULTIMO CARÁCTER LEÍDO  		 
+		else if (c != EOF){ // Si no llegó al final del archivo
+    	ungetc(c, inputFile); // Devuelve el carácter leído para procesarlo después
+    	if (c == '\n') num_linea--; // Corrige el contador si era un salto de línea
+			}
 
         /* --------------------------------------------------------------------------
          * 4. CONSULTA EN MATRIZ M3 (token_por_estado):
@@ -486,13 +501,13 @@ int yylex(void) {
         /* --------------------------------------------------------------------------
          * 5. RESOLUCIÓN DE AMBIGÜEDAD (Palabra Reservada vs Identificador):
          * -------------------------------------------------------------------------- */
-        if (token_reconocido == ID) {
+        if (token_reconocido == ID) { // Si el token reconocido es un identificador
             f4(); /* Determina si es Palabra Reservada o ID y actualiza ultimo_token_devuelto */
-            return ultimo_token_devuelto;
+            return ultimo_token_devuelto; // Devuelve el token definitivo
         }
 
-        if (token_reconocido != 0) {
-            return token_reconocido;
+        if (token_reconocido != 0) {  // Si se reconoció otro token
+            return token_reconocido;	// Devuelve el token reconocido
         }
     }
 
@@ -547,11 +562,13 @@ void exportarTS(void) {
  * exportación de la Tabla de Símbolos si no ocurrieron errores léxicos.
  ********************************************************************************/ 
 int main(int argc, char *argv[]) {
+    // Abre el archivo fuente en modo lectura
     if ((inputFile = fopen("ejemplo.raz", "r")) == NULL) {
         printf("Error al abrir el archivo 'ejemplo.raz'\n");
-        return 1;
+        return 1; // Finaliza si no pudo abrir el archivo
     }
 
+    // Muestra el encabezado del reporte léxico
     printf("=================================================================================\n");
     printf("           REPORTE DE ANALIZADOR LÉXICO - COMPILADOR RAZIO (GRUPO C)             \n");
     printf("=================================================================================\n");
@@ -559,25 +576,25 @@ int main(int argc, char *argv[]) {
     printf("---------------------------------------------------------------------------------\n");
 
     int token;
-    while (!feof(inputFile)) {
-        token = yylex();
-        if (token != 0) {
-            printf("[Línea %2d] | %-18s | %-8d | '%s'\n", 
-                   num_linea, 
-                   obtener_nombre_token(token), 
-                   token, 
-                   buffer);
+    while (!feof(inputFile)) { // Repite hasta llegar al final del archivo
+        token = yylex();       // Obtiene el siguiente token del analizador léxico
+        if (token != 0) {      // Si reconoció un token, lo muestra
+            printf("[Línea %2d] | %-18s | %-8d | '%s'\n",
+                   num_linea,
+                   obtener_nombre_token(token), // Obtiene el nombre del token
+                   token,                       // Muestra su código numérico
+                   buffer);                     // Muestra el lexema reconocido
         }
     }
 
-    fclose(inputFile);
+    fclose(inputFile); // Cierra el archivo fuente
 
-    if (error_lexico == 0) {
+    if (error_lexico == 0) { // Si no hubo errores léxicos
         printf("\n - Compilacion AL EXITOSA - \n");
-        exportarTS();
+        exportarTS(); // Exporta la tabla de símbolos
     } else {
         printf("\n - Analisis Lexico completo con ERRORES - \n");
     }
 
-    return 0;
+    return 0; // Finaliza el programa correctamente
 }
