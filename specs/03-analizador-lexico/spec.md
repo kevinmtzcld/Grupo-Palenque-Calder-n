@@ -33,7 +33,7 @@ produzca la lista completa.
 ---
 
 
-### 7. Acciones semánticas (funciones `f1` a `fe`)
+### 5. Acciones semánticas (funciones `f1` a `fe`)
 
 Implementan la lógica asociada a las transiciones del autómata léxico.
 
@@ -90,7 +90,7 @@ Implementan la lógica asociada a las transiciones del autómata léxico.
 
 
 
-## 8.Matriz de funciones
+## 7.Matriz de funciones
 
 | DESCRIPCIÓN | ESTADO | Letra | Dígito | + | - | * | / | = | < | > | ! | ( | ) | { | } | ; | : | , | " | Blanco | Otro |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
@@ -125,7 +125,7 @@ Implementan la lógica asociada a las transiciones del autómata léxico.
 
 
 
-## Matriz de tokens
+## 8.Matriz de tokens
 
 | DESCRIPCIÓN | ESTADO | Letra | Dígito | + | - | * | / | = | < | > | ! | ( | ) | { | } | ; | : | , | " | Blanco | Otro |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
