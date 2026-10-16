@@ -32,22 +32,26 @@ produzca la lista completa.
 
 ---
 
-## 5. Acciones semánticas
 
-| Acción | Qué hace |
+### 7. Acciones semánticas (funciones `f1` a `fe`)
+
+Implementan la lógica asociada a las transiciones del autómata léxico.
+
+| Función | Descripción |
 |---|---|
-| `f1` | **Inicia identificador:** Limpia el buffer de identificadores y guarda la primera letra leída. |
-| `f2` | **Inicia constante racional:** Limpia el buffer de números y guarda el primer dígito leído. |
-| `f3a` | **Acumula carácter de identificador:** Verifica que la longitud del buffer no supere el límite permitido para identificadores (ej. 32 caracteres). Si está dentro del límite, concatena la letra o dígito; si lo excede, descarta los caracteres sobrantes. |
-| `f3b` | **Acumula carácter/dígito de constante:** Acumula dígitos o el carácter `/` y verifica en tiempo real que el valor numérico (numerador o denominador) no supere el rango permitido de 32 bits con signo ($D_2$). Activa la bandera de overflow si se excede. |
-| `f4` | **Cierra identificador:** Verifica si el identificador es una palabra reservada. Si lo es, devuelve su token. Si no, busca el identificador en la Tabla de Símbolos y, si no existe, lo registra como `ID`. |
-| `f5` | **Cierra constante racional:** Procesa el valor acumulado en el buffer, simplifica la fracción por MCD, verifica rango $D_2$ y denominador $\neq 0$. Si no existe en la Tabla de Constantes, la registra y devuelve `LIT_RACIONAL`. |
-| `f7a` | **Inicia literal de cadena:** Se ejecuta al leer la primera comilla doble (`"`). Limpia el buffer de cadenas para empezar de cero. |
-| `f7b` | **Acumula carácter de cadena:** Verifica que la longitud no supere el límite máximo para cadenas. Si está dentro del límite, guarda cualquier carácter leído (incluyendo espacios); si lo excede, descarta o marca error. |
-| `f7c` | **Cierra literal de cadena:** Se ejecuta al encontrar la comilla doble de cierre (`"`). Coloca el carácter nulo (`\0`) al final, remueve comillas exteriores, registra la cadena en la Tabla de Cadenas/Literales y asigna el token `LIT_CADENA`. |
-| `f8` | **Ignora caracteres de comentario:** Se ejecuta al transitar por el cuerpo de un comentario multilínea (`/* ... */`). Descarta los caracteres leídos sin guardarlos en buffer ni generar ningún token, permitiendo avanzar entre estados hasta encontrar `*/`. |
-| `fn` | **Función nula:** No realiza ninguna acción semántica ni genera ningún token. Se utiliza para avanzar y descartar espacios en blanco, tabulaciones y saltos de línea, o en transiciones puras de control. |
-| `fe` | **Función de error:** Reporta un error léxico cuando se encuentra un carácter inválido o una secuencia no reconocida, registrando la línea correspondiente. |
+| `f1` | Inicializa el buffer para el reconocimiento de identificadores (`ID`). |
+| `f2` | Inicializa el buffer para el reconocimiento de constantes racionales. |
+| `f3a` | Acumula caracteres en identificadores, aplicando la regla D6: truncamiento a un máximo de 20 caracteres. |
+| `f3b` | Acumula dígitos y la barra `/` en constantes racionales, verificando el rango de 32 bits según la regla D2. |
+| `f4` | Reconoce palabras reservadas o inserta identificadores en la Tabla de Símbolos. |
+| `f5` | Finaliza el reconocimiento de una constante racional, valida la división por cero durante la compilación e inserta la constante en la Tabla de Símbolos. |
+| `f7a`, `f7b`, `f7c` | Gestionan la captura y acumulación de literales de cadena delimitados por comillas dobles (`"..."`). |
+| `f8` | Descarta comentarios multilínea y limpia el buffer correspondiente. |
+| `fa` | Acumula explícitamente el segundo carácter de los operadores compuestos, como `==`, `!=`, `>=` y `<=`. |
+| `fn` | Función nula utilizada en separadores y espacios en blanco, sin realizar acciones semánticas. |
+| `fu` | Finaliza el reconocimiento de un token mediante retracción (*retract*), devolviendo el carácter leído de más al flujo de entrada para que pueda ser procesado en la siguiente transición. |
+| `fe` | Captura y reporta errores léxicos. |
+
 
 
 
@@ -82,19 +86,6 @@ produzca la lista completa.
 | suma | e25 | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | error |
 | resta | e26 | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | error |
 | multiplicación | e27 | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | error |
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
