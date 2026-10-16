@@ -227,7 +227,4 @@ Se deja constancia de lo que **Razio** no incluye en su alcance, para que ningun
 
 
 
-### AUTÓMATA FINÍTO
-<img width="1986" height="2259" alt="autom comp pc drawio" src="https://github.com/user-attachments/assets/bb5298cd-1c83-4068-a473-6628d1f27fb4" />
-
 
