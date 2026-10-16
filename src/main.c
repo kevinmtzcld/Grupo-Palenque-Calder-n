@@ -144,7 +144,7 @@ Evento get_evento(int c) {
         case ':': return COL_DOS_PUNTOS;
         case ',': return COL_COMA;
         case '"': return COL_COMILLA;
-        case ' ': case '\t': case '\r': case '\n': return COL_BLANCO;
+		case ' ': case '\t': case '\r': case '\n': case '\0': case EOF: return COL_BLANCO; /* Mapea caracteres de fin como blanco */
         default: return COL_OTRO;
     }
 }
@@ -153,9 +153,9 @@ Evento get_evento(int c) {
 
 /********************************************************************************
  * 6. TRADUCCIÓN DE CÓDIGOS DE TOKEN A CADENAS TEXTUALES
- /* Traduce el código numérico interno del token (ej: 257) a su equivalente en texto (ej: "PR_DEF")
- * para mostrarlo de forma legible en la tabla del reporte de consola. */
- //cada caso está definido en el inicio de este codigo con "define" en la tabla de tokens
+ * Traduce el código numérico interno del token (ej: 257) a su equivalente en texto (ej: "PR_DEF")
+ * para mostrarlo de forma legible en la tabla del reporte de consola.
+ * Cada caso está definido al inicio del código con #define en la tabla de tokens.
  ********************************************************************************/
 const char* obtener_nombre_token(int codigo) {
     switch (codigo) {
@@ -295,12 +295,35 @@ void f7a(void) {
     buffer[buf_idx] = '\0'; 
 }
 
+
+/*
 void f7b(void) { 
     if (buf_idx < MAX_BUFFER - 1) { 
         buffer[buf_idx++] = c_actual; 
         buffer[buf_idx] = '\0'; 
     }
+}*/
+
+
+
+/********NUEVO****/
+
+void f7b(void) { 
+    /* ACT 15/10: Si dentro de la cadena encuentra un salto de línea sin haber leído la comilla de cierre */
+    if (c_actual == '\n') {
+        printf("\n[ERROR LÉXICO - Línea %d]: Literal cadena sin cerrar antes del salto de linea.\n", num_linea);
+        error_lexico = 1;
+        buffer[0] = '\0';
+        buf_idx = 0;
+        return;
+    }
+
+    if (buf_idx < MAX_BUFFER - 1) { 
+        buffer[buf_idx++] = c_actual; 
+        buffer[buf_idx] = '\0'; 
+    }
 }
+
 
 void f7c(void) {
     ultimo_token_devuelto = LIT_CADENA;
@@ -311,6 +334,14 @@ void f8(void) {
     /* Descarte de comentarios: limpia el buffer para no conservar la '/' inicial */
     buf_idx = 0;
     buffer[0] = '\0';
+}
+
+/* fa: Acumula el segundo carácter en operadores compuestos (==, !=, <=, >=) */
+void fa(void) { 
+    if (buf_idx < MAX_BUFFER - 1) { 
+        buffer[buf_idx++] = c_actual; 
+        buffer[buf_idx] = '\0'; 
+    }
 }
 
 
@@ -337,16 +368,16 @@ void fe(void) {
 const AccionSemantica proceso[28][NUM_COLUMNAS] = {
 /* e 0 */ { f1,  f2,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fe,  fn,  f7a, fn,  fe },
 /* e 1 */ { f3a, f3a, f4,  f4,  f4,  f4,  f4,  f4,  f4,  f4,  f4,  f4,  f4,  f4,  f4,  f4,  f4,  f4,  f4,  fe },
-/* e 2 */ { fe,  fe,  fe,  fe,  fe,  fe,  fn,  fe,  fe,  fe,  fe,  fe,  fe,  fe,  fe,  fe,  fe,  fe,  fe,  fe },
+/* e 2 */ { fe,  fe,  fe,  fe,  fe,  fe,  fa,  fe,  fe,  fe,  fe,  fe,  fe,  fe,  fe,  fe,  fe,  fe,  fe,  fe },
 /* e 3 */ { fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fe },
 /* e 4 */ { f5,  f3b, f5,  f5,  f5,  f3b, f5,  f5,  f5,  f5,  f5,  f5,  f5,  f5,  f5,  f5,  f5,  f5,  f5,  fe },
 /* e 5 */ { fe,  f3b, fe,  fe,  fe,  fe,  fe,  fe,  fe,  fe,  fe,  fe,  fe,  fe,  fe,  fe,  fe,  fe,  fe,  fe },
 /* e 6 */ { f5,  f3b, f5,  f5,  f5,  f5,  f5,  f5,  f5,  f5,  f5,  f5,  f5,  f5,  f5,  f5,  f5,  f5,  f5,  fe },
-/* e 7 */ { fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fe },
+/* e 7 */ { fn,  fn,  fn,  fn,  fn,  fn,  fa,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fe },
 /* e 8 */ { fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fe },
-/* e 9 */ { fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fe },
+/* e 9 */ { fn,  fn,  fn,  fn,  fn,  fn,  fa,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fe },
 /* e10 */ { fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fe },
-/* e11 */ { fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fe },
+/* e11 */ { fn,  fn,  fn,  fn,  fn,  fn,  fa,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fe },
 /* e12 */ { fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fe },
 /* e13 */ { f7b, f7b, f7b, f7b, f7b, f7b, f7b, f7b, f7b, f7b, f7b, f7b, f7b, f7b, f7b, f7b, f7b, f7c, f7b, fe }, /* COL_OTRO -> fe */
 /* e14 */ { fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fn,  fe },
@@ -442,12 +473,20 @@ int yylex(void) {
          * Consume carácter por carácter usando M1 (nuevo_estado) y M2 (proceso)
          * hasta chocar contra un Estado de Parada (estado < 0) o el fin de archivo.
          * -------------------------------------------------------------------------- */
-        while (estado >= 0 && c != EOF) {
+        while (estado >= 0) {
             c_actual = (char)c;       // Guarda el carácter actual.
 			columna = get_evento(c);  // Obtiene la columna correspondiente al carácter.
 
             /* MATRIZ M2 (proceso): Ejecuta la acción semántica asociada */
             (*proceso[estado][columna])();
+            
+            
+            /********NUEVO:ACT 15/10:****/
+           /* RECUPERACION DE CADENA NO CERRADA:
+             * Si estando en estado 13 (cadena) lee un salto de linea, corta la caminata */
+            if (estado == 13 && c_actual == '\n') {
+                break;
+            }             
 
             /* Guarda el estado actual antes de saltar (necesario para consultar M3 al salir) */
             estado_ant = estado;
@@ -455,42 +494,28 @@ int yylex(void) {
             /* MATRIZ M1 (nuevo_estado): Transición hacia el siguiente estado del autómata */
             estado = nuevo_estado[estado][columna];
 
-            /* Si el autómata no frenó (no llegó a estado negativo), lee el siguiente carácter */
-            if (estado >= 0) {	// Si el autómata puede continuar
-                c = fgetc(inputFile);	// Lee el siguiente carácter
-                if (c == '\n') num_linea++; /* Sincroniza contador de líneas en lecturas multilínea */
-            }
+          	if (estado < 0) break; /* Estado de parada o retracción, break sale del while  */
+
+            c = fgetc(inputFile); 	/*lee sig caracter*/
+            if (c == '\n') num_linea++;
+            
         }
 
-        /* Si ocurrió un error en estado 0 o en medio de una cadena (e13 + COL_OTRO), ignora el carácter */
-        if (estado == -1 && estado_ant == 0) {
-            continue;
+		/* RECUPERACIÓN DE ERROR LÉXICO:
+		 * Si en el estado inicial (0) se lee un carácter inválido (como '$' o '@'), 
+		 * se descarta y se salta al siguiente carácter para continuar analizando. */
+         if (estado == -1 && estado_ant == 0) {
+            continue; //continue descarta esta iteración del while exterior y pasa a la siguiente SIN RETRACCIÓN 
+            		  //ya que esa parte no llega a ejecutarse en esta iteración
         }
 
-        /* --------------------------------------------------------------------------
-         * 3. RETRACCIÓN Y MANEJO DE EOF:
-         * -------------------------------------------------------------------------- */
-        if (c == EOF && estado > 0) {	// Si termina el archivo dentro de un lexema
-            /* Detecta cadenas o comentarios que no fueron cerrados antes de terminar el archivo */
-            if (estado == 13) { // Si quedó una cadena sin cerrar
-                printf("\n[ERROR LÉXICO - Línea %d]: Literal cadena sin cerrar en fin de archivo.\n", num_linea);
-                error_lexico = 1; // Marca el error léxico
-            } else if (estado == 16 || estado == 17) { // Si quedó un comentario sin cerrar
-                printf("\n[ERROR LÉXICO - Línea %d]: Comentario multilínea sin cerrar en fin de archivo.\n", num_linea);
-                error_lexico = 1; // Marca el error léxico
-            }
-           c_actual = ' '; // Simula un espacio para finalizar el procesamiento del lexema
-           
-		   (*proceso[estado][COL_BLANCO])(); // Ejecuta la acción semántica correspondiente al espacio
-		
-			estado_ant = estado; // Guarda el estado anterior para utilizarlo después
-			}			
-			
-		/// RETRACCIÓN DE ULTIMO CARÁCTER LEÍDO  		 
-		else if (c != EOF){ // Si no llegó al final del archivo
-    	ungetc(c, inputFile); // Devuelve el carácter leído para procesarlo después
-    	if (c == '\n') num_linea--; // Corrige el contador si era un salto de línea
-			}
+	    /* --------------------------------------------------------------------------
+		* RETRACCIÓN DE ULTIMO CARÁCTER LEÍDO  
+	    /* -------------------------------------------------------------------------- */			
+		if (c != EOF){ // Si no llegó al final del archivo
+	    ungetc(c, inputFile); // Devuelve el carácter leído para procesarlo después
+	    if (c == '\n') num_linea--; // Corrige el contador si era un salto de línea
+		}
 
         /* --------------------------------------------------------------------------
          * 4. CONSULTA EN MATRIZ M3 (token_por_estado):
@@ -503,11 +528,16 @@ int yylex(void) {
          * -------------------------------------------------------------------------- */
         if (token_reconocido == ID) { // Si el token reconocido es un identificador
             f4(); /* Determina si es Palabra Reservada o ID y actualiza ultimo_token_devuelto */
-            return ultimo_token_devuelto; // Devuelve el token definitivo
+            token_reconocido = ultimo_token_devuelto; // el token definitivo
         }
 
-        if (token_reconocido != 0) {  // Si se reconoció otro token
-            return token_reconocido;	// Devuelve el token reconocido
+        /* MOSTRAR O PROCESAR TOKEN */
+        if (token_reconocido != 0) {
+            printf("[Línea %2d] | %-18s | %-8d | '%s'\n",
+                   num_linea,
+                   obtener_nombre_token(token_reconocido),
+                   token_reconocido,
+                   buffer);
         }
     }
 
@@ -575,26 +605,22 @@ int main(int argc, char *argv[]) {
     printf("%-8s | %-18s | %-8s | %-30s\n", "LÍNEA", "TOKEN", "CÓDIGO", "LEXEMA");
     printf("---------------------------------------------------------------------------------\n");
 
-    int token;
-    while (!feof(inputFile)) { // Repite hasta llegar al final del archivo
-        token = yylex();       // Obtiene el siguiente token del analizador léxico
-        if (token != 0) {      // Si reconoció un token, lo muestra
-            printf("[Línea %2d] | %-18s | %-8d | '%s'\n",
-                   num_linea,
-                   obtener_nombre_token(token), // Obtiene el nombre del token
-                   token,                       // Muestra su código numérico
-                   buffer);                     // Muestra el lexema reconocido
-        }
-    }
+    /* 2. Se llama a yylex() UNA SOLA VEZ (el bucle externo de yylex procesa todo) */
+    yylex();
 
-    fclose(inputFile); // Cierra el archivo fuente
+    /* 3. Cierra el archivo al terminar */
+    fclose(inputFile);
 
-    if (error_lexico == 0) { // Si no hubo errores léxicos
-        printf("\n - Compilacion AL EXITOSA - \n");
-        exportarTS(); // Exporta la tabla de símbolos
+    /* Reporte de estado */
+    if (error_lexico == 0) {
+        printf("\n - Compilación AL EXITOSA - \n");
+        exportarTS();
     } else {
-        printf("\n - Analisis Lexico completo con ERRORES - \n");
+        printf("\n - Análisis Léxico completo con ERRORES - \n");
     }
 
-    return 0; // Finaliza el programa correctamente
+    return 0;
+    
+    
+    
 }
