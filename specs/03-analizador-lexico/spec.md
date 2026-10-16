@@ -225,5 +225,8 @@ principal()
 }
 ```
 
-```
+
+
+## 12.AUTÓMATA FINITO
+<img width="1986" height="2259" alt="image" src="https://github.com/user-attachments/assets/147cbe10-4914-49eb-9865-b5fa3e4af820" />
 
