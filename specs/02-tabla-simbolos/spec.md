@@ -4,7 +4,7 @@
 ## 1. Descripción General
 La **Tabla de Símbolos (TS)** es la estructura de datos en memoria encargada de almacenar
 y gestionar la información relevante sobre los identificadores (`ID`) y constantes de texto (`LIT_CADENA`) o numéricas (`LIT_RACIONAL`) reconocidas por el analizador léxico durante 
-la lectura del código fuente en lenguaje **Razio (Grupo C)**[cite: 1, 4].
+la lectura del código fuente en lenguaje Razio.
 
 ---
 
