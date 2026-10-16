@@ -37,3 +37,14 @@
 - **Impacto en la spec:** Ninguno.
 
 ---
+
+## Iteración 3 — Implementar la estructura del yylex con doble bucle
+
+- **Fecha:** 10/10/2026 · Gemini
+- **Qué pedí:** Le pedí que siga la estructura de doble bucle en el yylex con una foto del ejemplo que dió el profesor en clase
+- **Qué devolvió:** Devolvió algo bastante correcto, pero con errores como por ejemplo que para leer el archivo habia un doble bucle while (en el main, y en el yylex), también en la salida no mostraba los lexemas compuestos como ">=", en lugar de eso solo mostraba ">". 
+- **Qué cambié y por qué:** Corregí esos errores
+- **Impacto en la spec:** Ninguno.
+
+---
+
