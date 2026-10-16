@@ -53,10 +53,122 @@ produzca la lista completa.
 
 
 ## 6. Matriz de Nuevos Estados
-## 7. Matriz de Transiciones
-## 8. Tabla de Unreads
-[Matrices.xlsx](https://github.com/user-attachments/files/32564330/Matrices.xlsx)
+| DESCRIPCIÓN | ESTADO | Letra | Dígito | + | - | * | / | = | < | > | ! | ( | ) | { | } | ; | : | , | " | Blanco | Otro |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| inicio | e0 | e1 | e4 | e25 | e26 | e27 | e15 | e11 | e9 | e7 | e2 | e21 | e22 | e23 | e24 | e18 | error | e19 | e13 | e0 | error |
+| id o palabra | e1 | e1 | e1 | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | error |
+| posible distinto | e2 | error | error | error | error | error | error | e3 | error | error | error | error | error | error | error | error | error | error | error | error | error |
+| op distinto confirmado | e3 | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | error |
+| num racional | e4 | f | e4 | f | f | f | e5 | f | f | f | f | f | f | f | f | f | f | f | f | f | error |
+| denominador | e5 | error | e6 | error | error | error | error | error | error | error | error | error | error | error | error | error | error | error | error | error | error |
+| acum denominador | e6 | f | e6 | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | error |
+| mayor o mayor igual | e7 | f | f | f | f | f | f | e8 | f | f | f | f | f | f | f | f | f | f | f | f | error |
+| mayor igual | e8 | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | error |
+| menor o menor igual | e9 | f | f | f | f | f | f | e10 | f | f | f | f | f | f | f | f | f | f | f | f | error |
+| menor igual | e10 | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | error |
+| posible asignación | e11 | f | f | f | f | f | f | e12 | f | f | f | f | f | f | f | f | f | f | f | f | error |
+| comp igualdad | e12 | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | error |
+| inicio cadena literal | e13 | e13 | e13 | e13 | e13 | e13 | e13 | e13 | e13 | e13 | e13 | e13 | e13 | e13 | e13 | e13 | e13 | e13 | e14 | e13 | error |
+| fin cadena literal | e14 | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | error |
+| división o comentario | e15 | f | f | f | f | e16 | f | f | f | f | f | f | f | f | f | f | f | f | f | f | error |
+| comentario | e16 | e16 | e16 | e16 | e16 | e17 | e16 | e16 | e16 | e16 | e16 | e16 | e16 | e16 | e16 | e16 | e16 | e16 | e16 | e16 | error |
+| posible fin de comentario | e17 | e16 | e16 | e16 | e16 | e16 | e0 | e16 | e16 | e16 | e16 | e16 | e16 | e16 | e16 | e16 | e16 | e16 | e16 | e16 | error |
+| punto coma | e18 | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | error |
+| coma | e19 | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | error |
+| parentesis abre | e21 | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | error |
+| parentesis cierra | e22 | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | error |
+| llave abre | e23 | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | error |
+| llave cierra | e24 | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | error |
+| suma | e25 | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | error |
+| resta | e26 | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | error |
+| multiplicación | e27 | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | f | error |
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## 8.Matriz de funciones
+
+| DESCRIPCIÓN | ESTADO | Letra | Dígito | + | - | * | / | = | < | > | ! | ( | ) | { | } | ; | : | , | " | Blanco | Otro |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| inicio | e0 | e1-f1 | e4-f2 | e25-fn | e26-fn | e27-fn | e15-fn | e11-fn | e9-fn | e7-fn | e2-fn | e21-fn | e22-fn | e23-fn | e24-fn | e18-fn | error | e19-fn | e13-f7a | e0-fn | error-fe |
+| id o palabra | e1 | e1-f3a | e1-f3a | fu-f4 | fu-f4 | fu-f4 | fu-f4 | fu-f4 | fu-f4 | fu-f4 | fu-f4 | fu-f4 | fu-f4 | fu-f4 | fu-f4 | fu-f4 | fu-f4 | fu-f4 | fu-f4 | fu-f4 | error-fe |
+| posible distinto | e2 | error-fe | error-fe | error-fe | error-fe | error-fe | error-fe | e3-fa | error-fe | error-fe | error-fe | error-fe | error-fe | error-fe | error-fe | error-fe | error-fe | error-fe | error-fe | error-fe | error-fe |
+| op distinto confirmado | e3 | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | error-fe |
+| num racional | e4 | fu-f5 | e4-f3b | fu-f5 | fu-f5 | fu-f5 | e5-f3b | fu-f5 | fu-f5 | fu-f5 | fu-f5 | fu-f5 | fu-f5 | fu-f5 | fu-f5 | fu-f5 | fu-f5 | fu-f5 | fu-f5 | fu-f5 | error-fe |
+| denominador | e5 | error-fe | e6-f3b | error-fe | error-fe | error-fe | error-fe | error-fe | error-fe | error-fe | error-fe | error-fe | error-fe | error-fe | error-fe | error-fe | error-fe | error-fe | error-fe | error-fe | error-fe |
+| acum denominador | e6 | fu-f5 | e6-f3b | fu-f5 | fu-f5 | fu-f5 | fu-f5 | fu-f5 | fu-f5 | fu-f5 | fu-f5 | fu-f5 | fu-f5 | fu-f5 | fu-f5 | fu-f5 | fu-f5 | fu-f5 | fu-f5 | fu-f5 | error-fe |
+| mayor o mayor igual | e7 | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | e8-fa | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | error-fe |
+| mayor igual | e8 | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | error-fe |
+| menor o menor igual | e9 | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | e10-fa | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | error-fe |
+| menor igual | e10 | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | error-fe |
+| posible asignación | e11 | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | e12-fa | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | error-fe |
+| comp igualdad | e12 | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | error-fe |
+| inicio cadena literal | e13 | e13-f7b | e13-f7b | e13-f7b | e13-f7b | e13-f7b | e13-f7b | e13-f7b | e13-f7b | e13-f7b | e13-f7b | e13-f7b | e13-f7b | e13-f7b | e13-f7b | e13-f7b | e13-f7b | e13-f7b | e14-f7c | e13-f7b | error-fe |
+| fin cadena literal | e14 | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | error-fe |
+| división o comentario | e15 | fu-fn | fu-fn | fu-fn | fu-fn | e16-f8 | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | error-fe |
+| comentario | e16 | e16-f8 | e16-f8 | e16-f8 | e16-f8 | e17-f8 | e16-f8 | e16-f8 | e16-f8 | e16-f8 | e16-f8 | e16-f8 | e16-f8 | e16-f8 | e16-f8 | e16-f8 | e16-f8 | e16-f8 | e16-f8 | e16-f8 | error-fe |
+| posible fin de comentario | e17 | e16-f8 | e16-f8 | e16-f8 | e16-f8 | e16-f8 | e0-f8 | e16-f8 | e16-f8 | e16-f8 | e16-f8 | e16-f8 | e16-f8 | e16-f8 | e16-f8 | e16-f8 | e16-f8 | e16-f8 | e16-f8 | e16-f8 | error-fe |
+| punto coma | e18 | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | error-fe |
+| coma | e19 | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | error-fe |
+| parentesis abre | e21 | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | error-fe |
+| parentesis cierra | e22 | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | error-fe |
+| llave abre | e23 | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | error-fe |
+| llave cierra | e24 | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | error-fe |
+| suma | e25 | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | error-fe |
+| resta | e26 | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | error-fe |
+| multiplicación | e27 | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | fu-fn | error-fe |
 ---
+
+
+
+## Matriz de tokens
+
+| DESCRIPCIÓN | ESTADO | Letra | Dígito | + | - | * | / | = | < | > | ! | ( | ) | { | } | ; | : | , | " | Blanco | Otro |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| inicio | e0 | e1 | e4 | e25 | e26 | e27 | e15 | e11 | e9 | e7 | e2 | e21 | e22 | e23 | e24 | e18 | error | e19 | e13 | e0 | error |
+| id o palabra | e1 | e1 | e1 | 265 | 265 | 265 | 265 | 265 | 265 | 265 | 265 | 265 | 265 | 265 | 265 | 265 | 265 | 265 | 265 | 265 | error |
+| posible distinto | e2 | error | error | error | error | error | error | e3 | error | error | error | error | error | error | error | error | error | error | error | error | error |
+| op distinto confirmado | e3 | 278 | 278 | 278 | 278 | 278 | 278 | 278 | 278 | 278 | 278 | 278 | 278 | 278 | 278 | 278 | 278 | 278 | 278 | 278 | error |
+| num racional | e4 | 266 | e4 | 266 | 266 | 266 | e5 | 266 | 266 | 266 | 266 | 266 | 266 | 266 | 266 | 266 | 266 | 266 | 266 | 266 | error |
+| denominador | e5 | error | e6 | error | error | error | error | error | error | error | error | error | error | error | error | error | error | error | error | error | error |
+| acum denominador | e6 | 266 | e6 | 266 | 266 | 266 | 266 | 266 | 266 | 266 | 266 | 266 | 266 | 266 | 266 | 266 | 266 | 266 | 266 | 266 | error |
+| mayor o mayor igual | e7 | 273 | 273 | 273 | 273 | 273 | 273 | e8 | 273 | 273 | 273 | 273 | 273 | 273 | 273 | 273 | 273 | 273 | 273 | 273 | error |
+| mayor igual | e8 | 275 | 275 | 275 | 275 | 275 | 275 | 275 | 275 | 275 | 275 | 275 | 275 | 275 | 275 | 275 | 275 | 275 | 275 | 275 | error |
+| menor o menor igual | e9 | 274 | 274 | 274 | 274 | 274 | 274 | e10 | 274 | 274 | 274 | 274 | 274 | 274 | 274 | 274 | 274 | 274 | 274 | 274 | error |
+| menor igual | e10 | 276 | 276 | 276 | 276 | 276 | 276 | 276 | 276 | 276 | 276 | 276 | 276 | 276 | 276 | 276 | 276 | 276 | 276 | 276 | error |
+| posible asignación | e11 | 268 | 268 | 268 | 268 | 268 | 268 | e12 | 268 | 268 | 268 | 268 | 268 | 268 | 268 | 268 | 268 | 268 | 268 | 268 | error |
+| comp igualdad | e12 | 277 | 277 | 277 | 277 | 277 | 277 | 277 | 277 | 277 | 277 | 277 | 277 | 277 | 277 | 277 | 277 | 277 | 277 | 277 | error |
+| inicio cadena literal | e13 | e13 | e13 | e13 | e13 | e13 | e13 | e13 | e13 | e13 | e13 | e13 | e13 | e13 | e13 | e13 | e13 | e13 | e14 | e13 | error |
+| fin cadena literal | e14 | 267 | 267 | 267 | 267 | 267 | 267 | 267 | 267 | 267 | 267 | 267 | 267 | 267 | 267 | 267 | 267 | 267 | 267 | 267 | error |
+| división o comentario | e15 | 272 | 272 | 272 | 272 | e16 | 272 | 272 | 272 | 272 | 272 | 272 | 272 | 272 | 272 | 272 | 272 | 272 | 272 | 272 | error |
+| comentario | e16 | e16 | e16 | e16 | e16 | e17 | e16 | e16 | e16 | e16 | e16 | e16 | e16 | e16 | e16 | e16 | e16 | e16 | e16 | e16 | error |
+| posible fin de comentario | e17 | e16 | e16 | e16 | e16 | e16 | e0 | e16 | e16 | e16 | e16 | e16 | e16 | e16 | e16 | e16 | e16 | e16 | e16 | e16 | error |
+| punto coma | e18 | 285 | 285 | 285 | 285 | 285 | 285 | 285 | 285 | 285 | 285 | 285 | 285 | 285 | 285 | 285 | 285 | 285 | 285 | 285 | error |
+| coma | e19 | 286 | 286 | 286 | 286 | 286 | 286 | 286 | 286 | 286 | 286 | 286 | 286 | 286 | 286 | 286 | 286 | 286 | 286 | 286 | error |
+| parentesis abre | e21 | 281 | 281 | 281 | 281 | 281 | 281 | 281 | 281 | 281 | 281 | 281 | 281 | 281 | 281 | 281 | 281 | 281 | 281 | 281 | error |
+| parentesis cierra | e22 | 282 | 282 | 282 | 282 | 282 | 282 | 282 | 282 | 282 | 282 | 282 | 282 | 282 | 282 | 282 | 282 | 282 | 282 | 282 | error |
+| llave abre | e23 | 283 | 283 | 283 | 283 | 283 | 283 | 283 | 283 | 283 | 283 | 283 | 283 | 283 | 283 | 283 | 283 | 283 | 283 | 283 | error |
+| llave cierra | e24 | 284 | 284 | 284 | 284 | 284 | 284 | 284 | 284 | 284 | 284 | 284 | 284 | 284 | 284 | 284 | 284 | 284 | 284 | 284 | error |
+| suma | e25 | 269 | 269 | 269 | 269 | 269 | 269 | 269 | 269 | 269 | 269 | 269 | 269 | 269 | 269 | 269 | 269 | 269 | 269 | 269 | error |
+| resta | e26 | 270 | 270 | 270 | 270 | 270 | 270 | 270 | 270 | 270 | 270 | 270 | 270 | 270 | 270 | 270 | 270 | 270 | 270 | 270 | error |
+| multiplicación | e27 | 271 | 271 | 271 | 271 | 271 | 271 | 271 | 271 | 271 | 271 | 271 | 271 | 271 | 271 | 271 | 271 | 271 | 271 | 271 | error |
+
+
+
+
 
 ## 9. Errores que emite esta fase
 
@@ -123,147 +235,4 @@ principal()
 ```
 
 ```
-=================================================================
-     INICIANDO ANALIZADOR LÉXICO - COMPILADOR RAZIO (GRUPO C)    
-=================================================================
 
-[Línea  1] TOKEN: PR_RACIONAL        | Código: 259
-[Línea  1] TOKEN: ID                 | Código: 265 | Lexema: "x"
-[Línea  1] TOKEN: COMA               | Código: 286
-[Línea  1] TOKEN: ID                 | Código: 265 | Lexema: "y"
-[Línea  1] TOKEN: COMA               | Código: 286
-[Línea  1] TOKEN: ID                 | Código: 265 | Lexema: "z"
-[Línea  1] TOKEN: OP_ASIG            | Código: 268
-[Línea  1] TOKEN: LIT_RACIONAL       | Código: 266 | Lexema: "4/3" (num: 4, den: 3)
-[Línea  1] TOKEN: COMA               | Código: 286
-[Línea  1] TOKEN: ID                 | Código: 265 | Lexema: "calculo"
-[Línea  1] TOKEN: COMA               | Código: 286
-[Línea  1] TOKEN: ID                 | Código: 265 | Lexema: "resultado"
-[Línea  1] TOKEN: COMA               | Código: 286
-[Línea  1] TOKEN: ID                 | Código: 265 | Lexema: "c"
-[Línea  1] TOKEN: OP_ASIG            | Código: 268
-[Línea  1] TOKEN: LIT_RACIONAL       | Código: 266 | Lexema: "0" (num: 0, den: 1)
-[Línea  1] TOKEN: PUNTO_COMA         | Código: 285
-[Línea  5] TOKEN: PR_DEF             | Código: 257
-[Línea  5] TOKEN: ID                 | Código: 265 | Lexema: "funX"
-[Línea  5] TOKEN: PAR_IZQ            | Código: 281
-[Línea  5] TOKEN: PAR_DER            | Código: 282
-[Línea  6] TOKEN: LLAVE_IZQ          | Código: 283
-[Línea  7] TOKEN: PR_MOSTRAR         | Código: 263
-[Línea  7] TOKEN: PAR_IZQ            | Código: 281
-[Línea  7] TOKEN: LIT_CADENA         | Código: 267 | Lexema: "Calculando"
-[Línea  7] TOKEN: PAR_DER            | Código: 282
-[Línea  7] TOKEN: PUNTO_COMA         | Código: 285
-[Línea  8] TOKEN: ID                 | Código: 265 | Lexema: "calculo"
-[Línea  8] TOKEN: OP_ASIG            | Código: 268
-[Línea  8] TOKEN: ID                 | Código: 265 | Lexema: "x"
-[Línea  8] TOKEN: OP_SUMA            | Código: 269
-[Línea  8] TOKEN: ID                 | Código: 265 | Lexema: "y"
-[Línea  8] TOKEN: PUNTO_COMA         | Código: 285
-[Línea  9] TOKEN: PR_RETORNAR        | Código: 264
-[Línea  9] TOKEN: PAR_IZQ            | Código: 281
-[Línea  9] TOKEN: ID                 | Código: 265 | Lexema: "calculo"
-[Línea  9] TOKEN: PAR_DER            | Código: 282
-[Línea  9] TOKEN: PUNTO_COMA         | Código: 285
-[Línea 10] TOKEN: LLAVE_DER          | Código: 284
-[Línea 12] TOKEN: PR_PRINCIPAL       | Código: 258
-[Línea 12] TOKEN: PAR_IZQ            | Código: 281
-[Línea 12] TOKEN: PAR_DER            | Código: 282
-[Línea 13] TOKEN: LLAVE_IZQ          | Código: 283
-[Línea 14] TOKEN: ID                 | Código: 265 | Lexema: "x"
-[Línea 14] TOKEN: OP_ASIG            | Código: 268
-[Línea 14] TOKEN: LIT_RACIONAL       | Código: 266 | Lexema: "9/2" (num: 9, den: 2)
-[Línea 14] TOKEN: PUNTO_COMA         | Código: 285
-[Línea 15] TOKEN: ID                 | Código: 265 | Lexema: "y"
-[Línea 15] TOKEN: OP_ASIG            | Código: 268
-[Línea 15] TOKEN: LIT_RACIONAL       | Código: 266 | Lexema: "9/8" (num: 9, den: 8)
-[Línea 15] TOKEN: PUNTO_COMA         | Código: 285
-[Línea 17] TOKEN: ID                 | Código: 265 | Lexema: "resultado"
-[Línea 17] TOKEN: OP_ASIG            | Código: 268
-[Línea 17] TOKEN: ID                 | Código: 265 | Lexema: "funX"
-[Línea 17] TOKEN: PAR_IZQ            | Código: 281
-[Línea 17] TOKEN: PAR_DER            | Código: 282
-[Línea 17] TOKEN: PUNTO_COMA         | Código: 285
-[Línea 19] TOKEN: PR_SI              | Código: 260
-[Línea 19] TOKEN: PAR_IZQ            | Código: 281
-[Línea 19] TOKEN: PAR_IZQ            | Código: 281
-[Línea 19] TOKEN: ID                 | Código: 265 | Lexema: "x"
-[Línea 19] TOKEN: COMP_MAYOR         | Código: 273
-[Línea 19] TOKEN: ID                 | Código: 265 | Lexema: "y"
-[Línea 19] TOKEN: PAR_DER            | Código: 282
-[Línea 19] TOKEN: OP_AND             | Código: 279
-[Línea 19] TOKEN: PAR_IZQ            | Código: 281
-[Línea 19] TOKEN: ID                 | Código: 265 | Lexema: "c"
-[Línea 19] TOKEN: COMP_MENOR         | Código: 274
-[Línea 19] TOKEN: LIT_RACIONAL       | Código: 266 | Lexema: "3" (num: 3, den: 1)
-[Línea 19] TOKEN: PAR_DER            | Código: 282
-[Línea 19] TOKEN: PAR_DER            | Código: 282
-[Línea 20] TOKEN: LLAVE_IZQ          | Código: 283
-[Línea 21] TOKEN: PR_MOSTRAR         | Código: 263
-[Línea 21] TOKEN: PAR_IZQ            | Código: 281
-[Línea 21] TOKEN: LIT_CADENA         | Código: 267 | Lexema: "x es mayor a y"
-[Línea 21] TOKEN: PAR_DER            | Código: 282
-[Línea 21] TOKEN: PUNTO_COMA         | Código: 285
-[Línea 23] TOKEN: PR_MIENTRAS        | Código: 262
-[Línea 23] TOKEN: PAR_IZQ            | Código: 281
-[Línea 23] TOKEN: PAR_IZQ            | Código: 281
-[Línea 23] TOKEN: ID                 | Código: 265 | Lexema: "c"
-[Línea 23] TOKEN: COMP_MENOR         | Código: 274
-[Línea 23] TOKEN: LIT_RACIONAL       | Código: 266 | Lexema: "3" (num: 3, den: 1)
-[Línea 23] TOKEN: PAR_DER            | Código: 282
-[Línea 23] TOKEN: OP_OR              | Código: 280
-[Línea 23] TOKEN: PAR_IZQ            | Código: 281
-[Línea 23] TOKEN: ID                 | Código: 265 | Lexema: "x"
-[Línea 23] TOKEN: COMP_MENOR         | Código: 274
-[Línea 23] TOKEN: ID                 | Código: 265 | Lexema: "y"
-[Línea 23] TOKEN: PAR_DER            | Código: 282
-[Línea 23] TOKEN: PAR_DER            | Código: 282
-[Línea 24] TOKEN: LLAVE_IZQ          | Código: 283
-[Línea 25] TOKEN: PR_MOSTRAR         | Código: 263
-[Línea 25] TOKEN: PAR_IZQ            | Código: 281
-[Línea 25] TOKEN: LIT_CADENA         | Código: 267 | Lexema: "valor de c:"
-[Línea 25] TOKEN: COMA               | Código: 286
-[Línea 25] TOKEN: ID                 | Código: 265 | Lexema: "c"
-[Línea 25] TOKEN: PAR_DER            | Código: 282
-[Línea 25] TOKEN: PUNTO_COMA         | Código: 285
-[Línea 26] TOKEN: ID                 | Código: 265 | Lexema: "c"
-[Línea 26] TOKEN: OP_ASIG            | Código: 268
-[Línea 26] TOKEN: ID                 | Código: 265 | Lexema: "c"
-[Línea 26] TOKEN: OP_SUMA            | Código: 269
-[Línea 26] TOKEN: LIT_RACIONAL       | Código: 266 | Lexema: "1" (num: 1, den: 1)
-[Línea 26] TOKEN: PUNTO_COMA         | Código: 285
-[Línea 27] TOKEN: LLAVE_DER          | Código: 284
-[Línea 28] TOKEN: LLAVE_DER          | Código: 284
-[Línea 29] TOKEN: PR_SINO            | Código: 261
-[Línea 30] TOKEN: LLAVE_IZQ          | Código: 283
-[Línea 31] TOKEN: PR_SI              | Código: 260
-[Línea 31] TOKEN: PAR_IZQ            | Código: 281
-[Línea 31] TOKEN: ID                 | Código: 265 | Lexema: "x"
-[Línea 31] TOKEN: COMP_MENOR         | Código: 274
-[Línea 31] TOKEN: ID                 | Código: 265 | Lexema: "y"
-[Línea 31] TOKEN: PAR_DER            | Código: 282
-[Línea 32] TOKEN: LLAVE_IZQ          | Código: 283
-[Línea 33] TOKEN: PR_MOSTRAR         | Código: 263
-[Línea 33] TOKEN: PAR_IZQ            | Código: 281
-[Línea 33] TOKEN: LIT_CADENA         | Código: 267 | Lexema: "Y es mayor a x"
-[Línea 33] TOKEN: PAR_DER            | Código: 282
-[Línea 33] TOKEN: PUNTO_COMA         | Código: 285
-[Línea 34] TOKEN: LLAVE_DER          | Código: 284
-[Línea 35] TOKEN: PR_SINO            | Código: 261
-[Línea 36] TOKEN: LLAVE_IZQ          | Código: 283
-[Línea 37] TOKEN: PR_MOSTRAR         | Código: 263
-[Línea 37] TOKEN: PAR_IZQ            | Código: 281
-[Línea 37] TOKEN: LIT_CADENA         | Código: 267 | Lexema: "X e y son iguales"
-[Línea 37] TOKEN: PAR_DER            | Código: 282
-[Línea 37] TOKEN: PUNTO_COMA         | Código: 285
-[Línea 38] TOKEN: LLAVE_DER          | Código: 284
-[Línea 39] TOKEN: LLAVE_DER          | Código: 284
-[Línea 40] TOKEN: LLAVE_DER          | Código: 284
-
-=================================================================
-                PROCESAMIENTO LÉXICO FINALIZADO                  
-=================================================================
-```
-
-| Entrada | Salida esperada | Qué verifica |
-|---|---|---|
