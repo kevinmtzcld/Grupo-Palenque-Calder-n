@@ -26,8 +26,7 @@ typedef struct {
 RegTablaSimbolos tabla_simbolos[500];
 int cant_simbolos = 0;
 
-
-
+```
 
 
 
