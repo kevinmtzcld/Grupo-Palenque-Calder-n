@@ -33,9 +33,10 @@ El analizador sintáctico procesará la secuencia de tokens enviada por la funci
 ---
 ## Reglas y decisiones de diseño
 
+Markdown## Reglas y decisiones de diseño
+
 ### 1. Declaración de Tokens para Bison (`%token`)
 Definición de las constantes de componentes léxicos que el parser recibe desde `yylex()`:
----
 
 ```yacc
 %token PR_DEF PR_PRINCIPAL PR_RACIONAL PR_SI PR_SINO PR_MIENTRAS PR_MOSTRAR PR_RETORNAR
@@ -44,29 +45,11 @@ Definición de las constantes de componentes léxicos que el parser recibe desde
 %token COMP_MAYOR COMP_MENOR COMP_MAYOR_IGUAL COMP_MENOR_IGUAL COMP_IGUAL COMP_DISTINTO
 %token OP_AND OP_OR
 %token PAR_IZQ PAR_DER LLAVE_IZQ LLAVE_DER PUNTO_COMA COMA
-```
-
-
----
-### 2.Precedencia y Asociatividad de Operadores
-La precedencia de los operadores aritméticos está resuelta directamente a nivel gramatical mediante las capas <expresion>, <termino> y <factor>. Para los operadores relacionales y lógicos, se definen reglas de asociatividad a izquierda en Bison para eliminar ambigüedades en la tabla de estados:
----
-
-```yacc
-%left OP_OR
+2. Precedencia y Asociatividad de OperadoresLa precedencia de los operadores aritméticos está resuelta directamente a nivel gramatical mediante las capas <expresion>, <termino> y <factor>. Para los operadores relacionales y lógicos, se definen reglas de asociatividad a izquierda en Bison para eliminar ambigüedades en la tabla de estados:Fragmento de código%left OP_OR
 %left OP_AND
 %left COMP_IGUAL COMP_DISTINTO
 %left COMP_MAYOR COMP_MENOR COMP_MAYOR_IGUAL COMP_MENOR_IGUAL
-```
-
-
-
----
-### 3. Gramática de Razio traducida a Sintaxis Bison
----
-
-```
-Fragmento de código%%
+3. Gramática de Razio traducida a Sintaxis BisonFragmento de código%%
 
 programa:
     declaraciones funciones PR_PRINCIPAL PAR_IZQ PAR_DER LLAVE_IZQ sentencias LLAVE_DER
@@ -207,10 +190,11 @@ lista_argumentos:
 ;
 
 %%
-```
+4. Definición y Manejo de Errores SintácticosSe contempla la captura y recuperación frente a errores de estructura mediante el token reservado error en la regla sentencia (error PUNTO_COMA { yyerrok; }). Ante una sentencia mal construida (por ejemplo, omitir un operando o un paréntesis), Bison descarta tokens hasta encontrar el delimitador de fin de sentencia (;), emite un reporte indicando el número de línea (num_linea) y reanuda el análisis sintáctico de las sentencias subsiguientes sin abortar el compilador.
 
-#### 4. Definición y Manejo de Errores Sintácticos
-Se contempla la captura y recuperación frente a errores de estructura mediante el token reservado `error` en la regla `sentencia` (`error PUNTO_COMA { yyerrok; }`). Ante una sentencia mal construida (por ejemplo, omitir un operando o un paréntesis), Bison descarta tokens hasta encontrar el delimitador de fin de sentencia (`;`), emite un reporte indicando el número de línea (`num_linea`) y reanuda el análisis sintáctico de las sentencias subsiguientes sin abortar el compilador[cite: 1].
+
+
+
 
 ---
 
