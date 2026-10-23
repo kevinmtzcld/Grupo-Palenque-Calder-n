@@ -47,9 +47,10 @@ Definición de las constantes de componentes léxicos que el parser recibe desde
 ```
 
 
-
+---
 ### 2.Precedencia y Asociatividad de Operadores
 La precedencia de los operadores aritméticos está resuelta directamente a nivel gramatical mediante las capas <expresion>, <termino> y <factor>. Para los operadores relacionales y lógicos, se definen reglas de asociatividad a izquierda en Bison para eliminar ambigüedades en la tabla de estados:
+---
 
 ```yacc
 %left OP_OR
@@ -60,8 +61,10 @@ La precedencia de los operadores aritméticos está resuelta directamente a nive
 
 
 
-
+---
 ### 3. Gramática de Razio traducida a Sintaxis Bison
+---
+
 ```
 Fragmento de código%%
 
