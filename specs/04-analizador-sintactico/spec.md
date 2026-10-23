@@ -1,4 +1,5 @@
-Markdown# Spec — 04-analizador-sintactico
+Markdown
+# Spec — 04-analizador-sintactico
 
 ## Objetivo
 Especificar e implementar el **Analizador Sintáctico (Parser)** para el lenguaje **Razio (Grupo C)** utilizando la herramienta **Bison**. Esta etapa tiene como propósito validar la corrección gramatical de las sentencias del programa fuente y servir de puente para la generación de código intermedio en formato de **Tercetos**.
