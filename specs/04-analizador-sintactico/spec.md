@@ -44,7 +44,7 @@ Definición de las constantes de componentes léxicos que el parser recibe desde
 %token COMP_MAYOR COMP_MENOR COMP_MAYOR_IGUAL COMP_MENOR_IGUAL COMP_IGUAL COMP_DISTINTO
 %token OP_AND OP_OR
 %token PAR_IZQ PAR_DER LLAVE_IZQ LLAVE_DER PUNTO_COMA COMA
-
+```
 
 
 
