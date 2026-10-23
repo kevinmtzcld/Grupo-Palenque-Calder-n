@@ -30,11 +30,12 @@ El analizador sintáctico procesará la secuencia de tokens enviada por la funci
 
 
 
-
+---
 ## Reglas y decisiones de diseño
 
 ### 1. Declaración de Tokens para Bison (`%token`)
 Definición de las constantes de componentes léxicos que el parser recibe desde `yylex()`:
+---
 
 ```yacc
 %token PR_DEF PR_PRINCIPAL PR_RACIONAL PR_SI PR_SINO PR_MIENTRAS PR_MOSTRAR PR_RETORNAR
