@@ -206,15 +206,11 @@ lista_argumentos:
 %%
 ```
 
----
-#### 4.Definición y Manejo de Errores Sintácticos
-Se contempla la captura y recuperación frente a errores de estructura mediante el token reservado error en la regla sentencia (error PUNTO_COMA { yyerrok; }).Ante una sentencia mal construida (por ejemplo, omitir un operando o un paréntesis), Bison descarta tokens hasta encontrar el delimitador de fin de sentencia (;), emite un reporte indicando el número de línea (num_linea) y reanuda el análisis sintáctico de las sentencias subsiguientes sin abortar el compilador.   
----
-
-
-
+#### 4. Definición y Manejo de Errores Sintácticos
+Se contempla la captura y recuperación frente a errores de estructura mediante el token reservado `error` en la regla `sentencia` (`error PUNTO_COMA { yyerrok; }`). Ante una sentencia mal construida (por ejemplo, omitir un operando o un paréntesis), Bison descarta tokens hasta encontrar el delimitador de fin de sentencia (`;`), emite un reporte indicando el número de línea (`num_linea`) y reanuda el análisis sintáctico de las sentencias subsiguientes sin abortar el compilador[cite: 1].
 
 ---
+
 ## Criterios de aceptación
 
 * **Validación de Programas Correctos:** Reconoce y acepta exitosamente los programas fuente que cumplen de forma estricta con la gramática definida para el lenguaje Razio.
@@ -223,4 +219,3 @@ Se contempla la captura y recuperación frente a errores de estructura mediante 
 * **Respeto de Precedencia y Asociatividad:** Resuelve correctamente la prioridad de operadores aritméticos (vía estructura gramatical de expresiones, términos y factores) y de operadores lógicos/relacionales (vía directivas `%left`).
 * **Recuperación de Errores por Pánico:** Omitir una sentencia errónea mediante el token reservado `error` y el delimitador `;`, logrando reanudar el análisis de las sentencias siguientes sin abortar la compilación abruptamente[cite: 1].
 * **Finalización Limpia:** Completa el análisis sintáctico (retornando valor `0` desde `yyparse()`) al procesar un programa fuente totalmente válido.
----
