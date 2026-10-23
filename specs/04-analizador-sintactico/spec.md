@@ -48,20 +48,21 @@ Definición de las constantes de componentes léxicos que el parser recibe desde
 
 
 
-
-
-2. Precedencia y Asociatividad de Operadores
+### 2.Precedencia y Asociatividad de Operadores
 La precedencia de los operadores aritméticos está resuelta directamente a nivel gramatical mediante las capas <expresion>, <termino> y <factor>. Para los operadores relacionales y lógicos, se definen reglas de asociatividad a izquierda en Bison para eliminar ambigüedades en la tabla de estados:
 
-Fragmento de código
+```yacc
 %left OP_OR
 %left OP_AND
 %left COMP_IGUAL COMP_DISTINTO
 %left COMP_MAYOR COMP_MENOR COMP_MAYOR_IGUAL COMP_MENOR_IGUAL
+```
 
 
-3. Gramática de Razio traducida a Sintaxis Bison
 
+
+### 3. Gramática de Razio traducida a Sintaxis Bison
+```
 Fragmento de código%%
 
 programa:
@@ -203,9 +204,10 @@ lista_argumentos:
 ;
 
 %%
+```
 
 
-4. Definición y Manejo de Errores SintácticosSe contempla la captura y recuperación frente a errores de estructura mediante el token reservado error en la regla sentencia (error PUNTO_COMA { yyerrok; }).Ante una sentencia mal construida (por ejemplo, omitir un operando o un paréntesis), Bison descarta tokens hasta encontrar el delimitador de fin de sentencia (;), emite un reporte indicando el número de línea (num_linea) y reanuda el análisis sintáctico de las sentencias subsiguientes sin abortar el compilador.   
+#### 4.Definición y Manejo de Errores SintácticosSe contempla la captura y recuperación frente a errores de estructura mediante el token reservado error en la regla sentencia (error PUNTO_COMA { yyerrok; }).Ante una sentencia mal construida (por ejemplo, omitir un operando o un paréntesis), Bison descarta tokens hasta encontrar el delimitador de fin de sentencia (;), emite un reporte indicando el número de línea (num_linea) y reanuda el análisis sintáctico de las sentencias subsiguientes sin abortar el compilador.   
 
 
 
