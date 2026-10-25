@@ -49,19 +49,25 @@ Definición de las constantes de componentes léxicos que el parser recibe desde
 
 ### 4.2 Precedencia y Asociatividad de Operadores
 
-La precedencia de los operadores aritméticos está resuelta directamente a nivel gramatical mediante las capas `<expresion>`, `<termino>` y `<factor>`,
-  * `<expresion>` (Menor prioridad): Maneja operaciones de suma y resta.
-  * `<termino>` (Prioridad media): Maneja multiplicación y división sobre operandos de tipo `<factor>`.
-  * `<factor>` (Mayor prioridad): Evalúa componentes indivisibles (variables, constantes y expresiones delimitadas por paréntesis `(...)`).
 
-Directivas de Bison (Lógicas y Relacionales): Para los operadores lógicos y de comparación, la precedencia y la asociatividad a izquierda se definen de menor (inicio) a mayor (fin) jerarquía mediante la directiva %left:
--prioridad de menor(1ro) a mayor (4to):
+
+
+### 4.2 Precedencia y Asociatividad de Operadores
+
+Para garantizar una evaluación unívoca y evitar ambigüedades (conflictos *Shift/Reduce*) en Bison, la prioridad de los operadores se resuelve mediante dos mecanismos complementarios:
+
+* **Estructuración Gramatical (Operadores Aritméticos):** La precedencia matemática se fuerza estructuralmente a través de la jerarquía de reglas en el árbol sintáctico. Las capas inferiores obligan al parser a reducir primero las multiplicaciones y divisiones antes de evaluar las sumas y restas:
+  * `<expresion>` (**Menor prioridad**): Maneja operaciones de suma y resta.
+  * `<termino>` (**Prioridad media**): Maneja multiplicación y división sobre operandos de tipo `<factor>`.
+  * `<factor>` (**Mayor prioridad**): Evalúa componentes indivisibles (variables, constantes y expresiones delimitadas por paréntesis `(...)`).
+
+* **Directivas de Bison (Operadores Lógicos y Relacionales):** Para las comparaciones y la lógica booleana, la precedencia y la asociatividad a izquierda se declaran explícitamente en orden ascendente (de menor prioridad al inicio, a mayor prioridad al final) mediante la directiva `%left`:
 
 ```yacc
-%left OP_OR
-%left OP_AND
-%left COMP_IGUAL COMP_DISTINTO
-%left COMP_MAYOR COMP_MENOR COMP_MAYOR_IGUAL COMP_MENOR_IGUAL
+%left OP_OR                                                   /* 1ro - Menor prioridad */
+%left OP_AND                                                  /* 2do                   */
+%left COMP_IGUAL COMP_DISTINTO                                /* 3ro                   */
+%left COMP_MAYOR COMP_MENOR COMP_MAYOR_IGUAL COMP_MENOR_IGUAL   /* 4to - Mayor prioridad */
 ```
 
 ### 4.3 Gramática de Razio traducida a Sintaxis Bison
