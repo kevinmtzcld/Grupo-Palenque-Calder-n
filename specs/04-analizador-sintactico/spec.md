@@ -5,16 +5,16 @@
 Esta etapa tiene como propósito validar la corrección gramatical de las sentencias del programa fuente a partir de la secuencia de tokens suministrada por el analizador léxico.
 
 ---
-
 ## Alcance
 
-El analizador sintáctico procesará la secuencia de tokens enviada por la función `yylex()` desde `alexico.c` y verificará el cumplimiento estricto de la estructura gramatical del lenguaje Razio, contemplando:
+Esta sección define los límites de responsabilidad del analizador sintáctico y enumera el conjunto de construcciones del lenguaje **Razio** que el parser está diseñado para reconocer y validar. 
 
-* **Sección de Declaraciones Globales:** Reconocimiento de variables de tipo racional (`PR_RACIONAL`) declaradas exclusivamente al inicio del programa.
-* **Definición de Funciones:** Declaraciones con `def` (`PR_DEF`), parámetros de tipo racional y su bloque de sentencias, con soporte para la sentencia de retorno (`PR_RETORNAR`).
-* **Bloque Principal:** Estructura obligatoria del programa `principal () { ... }`.
-* **Sentencias Permitidas:** Asignaciones de expresiones racionales, estructuras de selección (`si` / `sino`), iteración (`mientras`) y llamadas a la función de salida (`mostrar`).
+El módulo procesará de manera iterativa los tokens provistos por la función `yylex()` desde `alexico.c` y verificará el cumplimiento estricto de la estructura del programa, abarcando las siguientes reglas gramaticales:
 
+* **Estructura General del Programa:** Validación del orden obligatorio de un archivo fuente en Razio (declaraciones globales al inicio, seguidas de la definición de funciones y el bloque `principal () { ... }` obligatorio).
+* **Declaraciones de Variables Globales:** Reconocimiento de variables de tipo racional (`PR_RACIONAL`) ubicadas exclusivamente al comienzo del programa.
+* **Definición y Modularización de Funciones:** Declaración de funciones mediante la palabra reservada `def` (`PR_DEF`), paso de parámetros de tipo racional, su bloque de sentencias interno y la sentencia de retorno (`PR_RETORNAR`).
+* **Sentencias y Expresiones Permitidas:** Validación sintáctica de asignaciones de expresiones aritméticas compuestas, estructuras de control condicionales (`si` / `sino`), bucles de iteración (`mientras`) y llamadas a la función de salida por pantalla (`mostrar`)[cite: 1].
 ---
 
 ## Entradas / Salidas
