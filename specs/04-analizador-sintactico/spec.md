@@ -49,7 +49,9 @@ Definición de las constantes de componentes léxicos que el parser recibe desde
 
 ### 2. Precedencia y Asociatividad de Operadores
 
-La precedencia de los operadores aritméticos está resuelta directamente a nivel gramatical mediante las capas `<expresion>`, `<termino>` y `<factor>`. Para los operadores relacionales y lógicos, se definen reglas de asociatividad a izquierda en Bison para eliminar ambigüedades en la tabla de estados:
+La precedencia de los operadores aritméticos está resuelta directamente a nivel gramatical mediante las capas `<expresion>`, `<termino>` y `<factor>`, ej: una * se resuelve antes que una suma porque * esta en nivel inferior y debe resolverse antes, sino la suma no se puede realizar.
+Directivas de Bison (Lógicas y Relacionales): Para los operadores lógicos y de comparación, la precedencia y la asociatividad a izquierda se definen de menor (inicio) a mayor (fin) jerarquía mediante la directiva %left:
+-prioridad menor(1ro) a mayor (4to):
 
 ```yacc
 %left OP_OR
@@ -61,14 +63,15 @@ La precedencia de los operadores aritméticos está resuelta directamente a nive
 ### 3. Gramática de Razio traducida a Sintaxis Bison
 
 ```yacc
+
 %%
 
 programa:
-    declaraciones funciones PR_PRINCIPAL PAR_IZQ PAR_DER LLAVE_IZQ sentencias LLAVE_DER
+    declaraciones funciones PR_PRINCIPAL PAR_IZQ PAR_DER bloque
 ;
 
 declaraciones:
-    declaraciones declaracion
+    declaracion
   | /* vacio */
 ;
 
@@ -77,49 +80,40 @@ declaracion:
 ;
 
 lista_variables:
-    lista_variables COMA ID
-  | ID
+    variable
+  | lista_variables COMA variable
+;
+
+variable:
+    ID
+  | ID OP_ASIG LIT_RACIONAL
 ;
 
 funciones:
-    funciones funcion
-  | /* vacio */
+    /* vacio */
+  | funciones funcion
 ;
 
 funcion:
-    PR_DEF ID PAR_IZQ parametros PAR_DER LLAVE_IZQ sentencias_func LLAVE_DER
+    PR_DEF ID PAR_IZQ PAR_DER bloque
 ;
 
-parametros:
-    PR_RACIONAL ID lista_parametros
-  | /* vacio */
-;
-
-lista_parametros:
-    lista_parametros COMA PR_RACIONAL ID
-  | /* vacio */
-;
-
-sentencias_func:
-    sentencias_func sentencia_func
-  | /* vacio */
-;
-
-sentencia_func:
-    sentencia
-  | retorno
+bloque:
+    LLAVE_IZQ sentencias LLAVE_DER
 ;
 
 sentencias:
-    sentencias sentencia
-  | /* vacio */
+    /* vacio */
+  | sentencias sentencia
 ;
 
 sentencia:
     asignacion
-  | est_seleccion
-  | est_iteracion
-  | salida
+  | si
+  | mientras
+  | mostrar
+  | retornar
+  | llamada_funcion
   | error PUNTO_COMA { yyerrok; }
 ;
 
@@ -127,39 +121,86 @@ asignacion:
     ID OP_ASIG expresion PUNTO_COMA
 ;
 
-est_seleccion:
-    PR_SI PAR_IZQ condicion PAR_DER LLAVE_IZQ sentencias LLAVE_DER bloque_sino
+expresion:
+    termino
+  | expresion OP_SUMA termino
+  | expresion OP_RESTA termino
 ;
 
-bloque_sino:
-    PR_SINO LLAVE_IZQ sentencias LLAVE_DER
-  | /* vacio */
+termino:
+    factor
+  | termino OP_MULT factor
+  | termino OP_DIV factor
 ;
 
-est_iteracion:
-    PR_MIENTRAS PAR_IZQ condicion PAR_DER LLAVE_IZQ sentencias LLAVE_DER
+factor:
+    LIT_RACIONAL
+  | ID
+  | PAR_IZQ expresion PAR_DER
+  | ID PAR_IZQ PAR_DER
 ;
 
-salida:
-    PR_MOSTRAR PAR_IZQ expresion_cadena PAR_DER PUNTO_COMA
+si:
+    PR_SI PAR_IZQ condicion PAR_DER bloque
+  | PR_SI PAR_IZQ condicion PAR_DER bloque PR_SINO bloque
 ;
 
-expresion_cadena:
-    LIT_CADENA
-  | expresion
+mientras:
+    PR_MIENTRAS PAR_IZQ condicion PAR_DER bloque
 ;
 
-retorno:
-    PR_RETORNAR expresion PUNTO_COMA
+mostrar:
+    PR_MOSTRAR PAR_IZQ argumentos_mostrar PAR_DER PUNTO_COMA
+;
+
+argumentos_mostrar:
+    ID
+  | LIT_CADENA
+  | LIT_CADENA COMA lista_ids_mostrar
+;
+
+lista_ids_mostrar:
+    ID
+  | lista_ids_mostrar COMA ID
+;
+
+retornar:
+    PR_RETORNAR PAR_IZQ valor_retorno PAR_DER PUNTO_COMA
+;
+
+valor_retorno:
+    ID
+  | LIT_RACIONAL
+;
+
+llamada_funcion:
+    ID PAR_IZQ PAR_DER PUNTO_COMA
 ;
 
 condicion:
-    expresion comparador expresion
-  | condicion OP_AND condicion
-  | condicion OP_OR condicion
+    cond_or
 ;
 
-comparador:
+cond_or:
+    cond_and
+  | cond_or OP_OR cond_and
+;
+
+cond_and:
+    cond_factor
+  | cond_and OP_AND cond_factor
+;
+
+cond_factor:
+    PAR_IZQ condicion PAR_DER
+  | comparacion
+;
+
+comparacion:
+    expresion operador_comparacion expresion
+;
+
+operador_comparacion:
     COMP_MAYOR
   | COMP_MENOR
   | COMP_MAYOR_IGUAL
@@ -168,45 +209,14 @@ comparador:
   | COMP_DISTINTO
 ;
 
-expresion:
-    expresion OP_SUMA termino
-  | expresion OP_RESTA termino
-  | termino
-;
-
-termino:
-    termino OP_MULT factor
-  | termino OP_DIV factor
-  | factor
-;
-
-factor:
-    ID
-  | LIT_RACIONAL
-  | PAR_IZQ expresion PAR_DER
-  | llamada_funcion
-;
-
-llamada_funcion:
-    ID PAR_IZQ argumentos PAR_DER
-;
-
-argumentos:
-    expresion lista_argumentos
-  | /* vacio */
-;
-
-lista_argumentos:
-    lista_argumentos COMA expresion
-  | /* vacio */
-;
-
 %%
+
+
 ```
 
 ### 4. Definición y Manejo de Errores Sintácticos
 
-Se contempla la captura y recuperación frente a errores de estructura mediante el token reservado `error` en la regla `sentencia` (`error PUNTO_COMA { yyerrok; }`). Ante una sentencia mal construida (por ejemplo, omitir un operando o un paréntesis), Bison descarta tokens hasta encontrar el delimitador de fin de sentencia (`;`), emite un reporte indicando el número de línea (`num_linea`) y reanuda el análisis sintáctico de las sentencias subsiguientes sin abortar el compilador.
+Se implementa un mecanismo de recuperación por pánico mediante la regla sentencia -> error PUNTO_COMA { yyerrok; }.Ante una sentencia mal construida (como omitir un operando o desbalancear paréntesis), Bison descarta los tokens defectuosos hasta hallar el delimitador de fin de sentencia (;), emite un reporte por consola indicando el número de línea exacto (num_linea) y reanuda el análisis del resto del programa sin abortar la compilación.   
 
 ---
 
