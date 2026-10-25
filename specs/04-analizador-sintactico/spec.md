@@ -14,7 +14,7 @@ El módulo procesará de manera iterativa los tokens provistos por la función `
 * **Estructura General del Programa:** Validación del orden obligatorio de un archivo fuente en Razio (declaraciones globales al inicio, seguidas de la definición de funciones y el bloque `principal () { ... }` obligatorio).
 * **Declaraciones de Variables Globales:** Reconocimiento de variables de tipo racional (`PR_RACIONAL`) ubicadas exclusivamente al comienzo del programa.
 * **Definición y Modularización de Funciones:** Declaración de funciones mediante la palabra reservada `def` (`PR_DEF`), su bloque de sentencias interno y la sentencia de retorno (`PR_RETORNAR`).
-* * **Sentencias y Expresiones Permitidas:** Validación sintáctica de asignaciones de expresiones aritméticas compuestas, estructuras de control condicionales (`si` / `sino`), bucles de iteración (`mientras`) y llamadas a la función de salida por pantalla (`mostrar`)
+* **Sentencias y Expresiones Permitidas:** Validación sintáctica de asignaciones de expresiones aritméticas compuestas, estructuras de control condicionales (`si` / `sino`), bucles de iteración (`mientras`) y llamadas a la función de salida por pantalla (`mostrar`).
 ---
 
 
@@ -50,10 +50,10 @@ Definición de las constantes de componentes léxicos que el parser recibe desde
 ### 2. Precedencia y Asociatividad de Operadores
 
 La precedencia de los operadores aritméticos está resuelta directamente a nivel gramatical mediante las capas `<expresion>`, `<termino>` y `<factor>`,
-EJEMPLO: una * se resuelve antes que una suma porque * esta en nivel inferior y debe resolverse antes, sino la suma no se puede realizar.
+EJEMPLO: una multiplicación se resuelve antes que una suma porque la multiplicación esta en nivel inferior y debe resolverse antes, sino la suma no se puede realizar.
 
 Directivas de Bison (Lógicas y Relacionales): Para los operadores lógicos y de comparación, la precedencia y la asociatividad a izquierda se definen de menor (inicio) a mayor (fin) jerarquía mediante la directiva %left:
--PRIORIDAD menor(1ro) a mayor (4to):
+-prioridad de menor(1ro) a mayor (4to):
 
 ```yacc
 %left OP_OR
