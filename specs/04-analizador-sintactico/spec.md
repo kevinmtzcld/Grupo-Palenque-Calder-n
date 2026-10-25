@@ -50,7 +50,9 @@ Definición de las constantes de componentes léxicos que el parser recibe desde
 ### 4.2 Precedencia y Asociatividad de Operadores
 
 La precedencia de los operadores aritméticos está resuelta directamente a nivel gramatical mediante las capas `<expresion>`, `<termino>` y `<factor>`,
-EJEMPLO: una multiplicación se resuelve antes que una suma porque la multiplicación esta en nivel inferior y debe resolverse antes, sino la suma no se puede realizar.
+  * `<expresion>` (Menor prioridad): Maneja operaciones de suma y resta.
+  * `<termino>` (Prioridad media): Maneja multiplicación y división sobre operandos de tipo `<factor>`.
+  * `<factor>` (Mayor prioridad): Evalúa componentes indivisibles (variables, constantes y expresiones delimitadas por paréntesis `(...)`).
 
 Directivas de Bison (Lógicas y Relacionales): Para los operadores lógicos y de comparación, la precedencia y la asociatividad a izquierda se definen de menor (inicio) a mayor (fin) jerarquía mediante la directiva %left:
 -prioridad de menor(1ro) a mayor (4to):
