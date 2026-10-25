@@ -14,20 +14,22 @@ El módulo procesará de manera iterativa los tokens provistos por la función `
 * **Estructura General del Programa:** Validación del orden obligatorio de un archivo fuente en Razio (declaraciones globales al inicio, seguidas de la definición de funciones y el bloque `principal () { ... }` obligatorio).
 * **Declaraciones de Variables Globales:** Reconocimiento de variables de tipo racional (`PR_RACIONAL`) ubicadas exclusivamente al comienzo del programa.
 * **Definición y Modularización de Funciones:** Declaración de funciones mediante la palabra reservada `def` (`PR_DEF`), paso de parámetros de tipo racional, su bloque de sentencias interno y la sentencia de retorno (`PR_RETORNAR`).
-* **Sentencias y Expresiones Permitidas:** Validación sintáctica de asignaciones de expresiones aritméticas compuestas, estructuras de control condicionales (`si` / `sino`), bucles de iteración (`mientras`) y llamadas a la función de salida por pantalla (`mostrar`)[cite: 1].
+* **Sentencias y Expresiones Permitidas:** Validación sintáctica de asignaciones de expresiones aritméticas compuestas, estructuras de control condicionales (`si` / `sino`), bucles de iteración (`mientras`) y llamadas a la función de salida por pantalla (`mostrar`)
 ---
 
+
+---
 ## Entradas / Salidas
+Esta sección establece el contrato de interfaz del analizador sintáctico, definiendo los datos que requiere del módulo léxico para operar y los resultados o reportes que emite tras la validación gramatical.
 
 ### Entradas
-
-* **Tira de Tokens:** Secuencia de códigos de componentes léxicos entregados de manera iterativa por la función `yylex()` desde `alexico.c`.
-* **Atributos de Léxico:** Información complementaria (lexemas y valores) recuperada a través de la variable `buffer` o mediante la consulta a la Tabla de Símbolos (`tabla_simbolos`).
+* **Tira de Tokens (Flujo Léxico):** Secuencia de códigos numéricos de componentes léxicos entregados a demanda (on-demand) e iterativamente por la función `yylex()` desde `alexico.c`.
+* **Atributos Léxicos y Contexto:** Información adicional asociada a los tokens (como el lexema exacto o el valor de la constante), recuperada mediante la variable global `buffer` o mediante consultas directas a la Tabla de Símbolos (`tabla_simbolos`).
 
 ### Salidas
-
-* **Reporte de Análisis:** Confirmación en consola de análisis sintáctico exitoso o emisión de mensajes de error sintáctico especificando el número de línea exacto (`num_linea`) donde se detectó el fallo.
-
+* **Reporte de Análisis:** 
+  * **En caso de éxito:** Notificación en consola confirmando que el programa fuente cumple de forma estricta con la gramática del lenguaje Razio.
+  * **En caso de error:** Mensaje(s) descriptivo(s) de error sintáctico emitido(s) por consola, indicando el número de línea exacto (`num_linea`) y el token donde se detectó el fallo de estructura.
 ---
 
 ## Reglas y decisiones de diseño
