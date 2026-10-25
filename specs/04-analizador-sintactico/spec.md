@@ -49,11 +49,6 @@ Definición de las constantes de componentes léxicos que el parser recibe desde
 
 ### 4.2 Precedencia y Asociatividad de Operadores
 
-
-
-
-### 4.2 Precedencia y Asociatividad de Operadores
-
 Para garantizar una evaluación unívoca y evitar ambigüedades (conflictos *Shift/Reduce*) en Bison, la prioridad de los operadores se resuelve mediante dos mecanismos complementarios:
 
 * **Estructuración Gramatical (Operadores Aritméticos):** La precedencia matemática se fuerza estructuralmente a través de la jerarquía de reglas en el árbol sintáctico. Las capas inferiores obligan al parser a reducir primero las multiplicaciones y divisiones antes de evaluar las sumas y restas:
