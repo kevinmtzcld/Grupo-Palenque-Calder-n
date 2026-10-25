@@ -213,11 +213,27 @@ operador_comparacion:
 
 
 ```
-
 ### 4. Definición y Manejo de Errores Sintácticos
 
-Se implementa un mecanismo de recuperación por pánico mediante la regla sentencia -> error PUNTO_COMA { yyerrok; }.Ante una sentencia mal construida (como omitir un operando o desbalancear paréntesis), Bison descarta los tokens defectuosos hasta hallar el delimitador de fin de sentencia (;), emite un reporte por consola indicando el número de línea exacto (num_linea) y reanuda el análisis del resto del programa sin abortar la compilación.   
+#### Clasificación de Errores Sintácticos Contemplados
+El analizador sintáctico identificará y reportará, entre otros, los siguientes tipos de fallos de estructura:
 
+1. **Omisión de Delimitadores Obligatorios:** Falta del punto y coma (`;`) al final de asignaciones, retornos o llamadas a función, o falta de llaves `{}` / paréntesis `()` en bloques de control (`si`, `mientras`).
+   * *Ejemplo:* `x = a + 5  // Falta ';'`
+2. **Expresiones Incompletas o Mal Formadas:** Operadores aritméticos, relacionales o lógicos que carecen de uno de sus operandos.
+   * *Ejemplo:* `total = (a + ) * 2;`
+3. **Desbalanceo de Paréntesis/Llaves:** Apertura de estructuras condicionales o expresiones sin su correspondiente cierre.
+   * *Ejemplo:* `si (x > 10 { mostrar("error"); }`
+4. **Violación de Secuencia Sintáctica:** Ubicación de palabras reservadas o sentencias en lugares no permitidos según la gramática.
+   * *Ejemplo:* Uso de `retornar` fuera de una función `def`.
+
+#### Mecanismo de Recuperación de Errores
+Se implementa un esquema de **recuperación por pánico** mediante la regla `sentencia -> error PUNTO_COMA { yyerrok; }`.
+
+Ante cualquier sentencia mal construida, Bison reacciona de la siguiente manera:
+* **Descarte de tokens:** Elimina los tokens defectuosos hasta hallar el delimitador de fin de sentencia (`;`).
+* **Reporte claro:** Emite un mensaje de error por consola especificando el número de línea exacto (`num_linea`) y el token del fallo.
+* **Reanudación:** Restablece el estado del parser vía `yyerrok` y continúa analizando el resto del programa sin abortar la compilación abruptamente.
 ---
 
 ## Criterios de aceptación
