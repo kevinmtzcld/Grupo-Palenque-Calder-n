@@ -212,11 +212,12 @@ Se contempla la captura y recuperación frente a errores de estructura mediante 
 
 ## Criterios de aceptación
 
-* **Validación de Programas Correctos:** Reconoce y acepta exitosamente los programas fuente que cumplen de forma estricta con la gramática definida para el lenguaje Razio.
-* **Detección y Reporte de Errores Sintácticos:** Rechaza programas con errores de sintaxis, emitiendo un mensaje de error por consola que informa el número de línea exacto (`num_linea`) donde ocurrió la falla.
+Esta sección establece las condiciones objetivas y verificables que debe cumplir el analizador sintáctico para dar por aprobada su implementación. Sirve como lista de verificación para validar la implementación del parser en Bison:
 
-* **Compilación Sin Conflictos:** El archivo de gramática procesado por Bison debe compilar limpiamente sin presentar ningún conflicto de tipo *Shift/Reduce* ni *Reduce/Reduce*.
-* **Respeto de Precedencia y Asociatividad:** Resuelve correctamente la prioridad de operadores aritméticos (vía estructura gramatical de expresiones, términos y factores) y de operadores lógicos/relacionales (vía directivas `%left`).
-* **Recuperación de Errores por Pánico:** Omitir una sentencia errónea mediante el token reservado `error` y el delimitador `;`, logrando reanudar el análisis de las sentencias siguientes sin abortar la compilación abruptamente.
+* **Validación de Programas Correctos:** Reconoce y acepta exitosamente los programas fuente que cumplen de forma estricta con la gramática definida para el lenguaje Razio, retornando el valor 0 desde yyparse().
+* **Detección y Reporte de Errores Sintácticos:** Rechaza programas que violen las reglas gramaticales, emitiendo un mensaje descriptivo por consola que informa el número de línea exacto (num_linea) y el token donde ocurrió la falla.   
+* **Compilación Sin Conflictos:** El archivo de gramática (sintactico.y) debe compilar sin generar ningún conflicto de ambigüedad del tipo Shift/Reduce ni Reduce/Reduce.
+* **Respeto de Precedencia y Asociatividad:** Respeta la prioridad de los operadores aritméticos mediante la jerarquía gramatical (<expresion>, <termino>, <factor>) y resuelve la asociatividad a izquierda de los operadores relacionales y lógicos mediante directivas %left.
+* **Recuperación de Errores por Pánico:** Ante una sentencia mal formada, descarta tokens hasta el siguiente delimitador ; mediante la regla error PUNTO_COMA { yyerrok; }, logrando reanudar el análisis de las sentencias subsiguientes sin abortar la ejecución del compilador de forma abrupta.   
 
 * **Finalización Limpia:** Completa el análisis sintáctico (retornando valor `0` desde `yyparse()`) al procesar un programa fuente totalmente válido.
