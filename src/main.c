@@ -12,15 +12,29 @@
 #include <string.h>
 #include <ctype.h>
 
+/*28/10*/
+#include "sintactico.tab.h"	/* Incluye los tokens generados por Bison */
+
 #define MAX_BUFFER 256
 #define MAX_ID_LEN 20               /* D6: Longitud máxima de identificador */
 #define MAX_INT_32 2147483647LL     /* D2: Límite de 32 bits con signo (64-bit safe) */
+
+
 
 /********************************************************************************
  * 2. TABLA DE TOKENS (CÓDIGOS NUMÉRICOS PARA INTERFAZ CON YACC/BISON)
  * Define las constantes simbólicas numéricas asociadas a cada Token del lenguaje.
  * Se utilizan códigos a partir de 257 para no colisionar con los caracteres ASCII.
  ********************************************************************************/
+ 
+  
+ /* CAMBIO PARA LA PARTE SINTACTICA: 28/10*/
+ /********************************************************************************
+ * 2. TABLA DE TOKENS
+ * Las constantes simbólicas (PR_DEF, ID, etc.) son provistas directamente
+ * por sintactico.tab.h para garantizar coincidencia exacta de códigos numéricos.
+ ********************************************************************************/
+ /* 
 #define PR_DEF           257
 #define PR_PRINCIPAL     258
 #define PR_RACIONAL      259
@@ -51,6 +65,7 @@
 #define LLAVE_DER        284
 #define PUNTO_COMA       285
 #define COMA             286
+*/
 
 /********************************************************************************
  * 3. ESTRUCTURA Y GESTIÓN DE LA TABLA DE SÍMBOLOS
@@ -238,7 +253,7 @@ void f3b(void) {
             val_num_actual = val_num_actual * 10 + digito;
         } else {
             val_num_actual = MAX_INT_32 + 1LL; /* Fuerza el estado de overflow sin desbordar C */
-            printf("\n[ERROR LÉXICO - Línea %d]: Overflow en constante '%s%c' (Excede 32 bits).\n", num_linea, buffer, c_actual);
+            printf("\n[ERROR LEXICO - Linea %d]: Overflow en constante '%s%c' (Excede 32 bits).\n", num_linea, buffer, c_actual);
             error_lexico = 1;
         }
     } else if (c_actual == '/') {
@@ -275,7 +290,7 @@ void f5(void) {
     char *barra = strchr(buffer, '/');
     /* Evaluación matemática para prevenir divisiones por cero como /0, /00, etc. */
     if (barra != NULL && atoi(barra + 1) == 0) {
-        printf("\n[ERROR LÉXICO/SEMÁNTICO - Línea %d]: División por cero en literal '%s'\n", num_linea, buffer);
+        printf("\n[ERROR LEXICO/SEMANTICO - Linea %d]: Division por cero en literal '%s'\n", num_linea, buffer);
         error_lexico = 1;
     }
     
@@ -311,7 +326,7 @@ void f7b(void) {
 void f7b(void) { 
     /* ACT 15/10: Si dentro de la cadena encuentra un salto de línea sin haber leído la comilla de cierre */
     if (c_actual == '\n') {
-        printf("\n[ERROR LÉXICO - Línea %d]: Literal cadena sin cerrar antes del salto de linea.\n", num_linea);
+        printf("\n[ERROR LEXICO - Línea %d]: Literal cadena sin cerrar antes del salto de linea.\n", num_linea);
         error_lexico = 1;
         buffer[0] = '\0';
         buf_idx = 0;
@@ -354,7 +369,7 @@ void fn(void) {
 }
 
 void fe(void) { 
-    printf("\n[ERROR LÉXICO - Línea %d]: Carácter no permitido '%c'\n", num_linea, c_actual); 
+    printf("\n[ERROR LEXICO - Linea %d]: Caracter no permitido '%c'\n", num_linea, c_actual); 
     error_lexico = 1; 
 }
 
@@ -429,10 +444,23 @@ const int nuevo_estado[28][NUM_COLUMNAS] = {
 
 /* MATRIZ M3: Mapea el último estado del autómata (índice 0-27) con el código de token reconocido (265-286). 
  * Los valores en 0 representan estados intermedios (no finales). */
+/*
 static const int token_por_estado[28] = {
     0, 265, 0, 278, 266, 0, 266, 273, 275, 274, 276,
     268, 277, 0, 267, 272, 0, 0, 285, 286, 0, 
     281, 282, 283, 284, 269, 270, 271
+};	*/
+
+
+
+/*CAMBIO: 28/10*/
+/* AHORA (Constantes simbólicas de Bison) */
+/* MATRIZ M3: Mapea el último estado del autómata (índice 0-27) con el código de token reconocido (265-286). 
+ * Los valores en 0 representan estados intermedios (no finales). */
+static const int token_por_estado[28] = {
+    0, ID, 0, COMP_DISTINTO, LIT_RACIONAL, 0, LIT_RACIONAL, COMP_MAYOR, COMP_MAYOR_IGUAL, COMP_MENOR, COMP_MENOR_IGUAL,
+    OP_ASIG, COMP_IGUAL, 0, LIT_CADENA, OP_DIV, 0, 0, PUNTO_COMA, COMA, 0, 
+    PAR_IZQ, PAR_DER, LLAVE_IZQ, LLAVE_DER, OP_SUMA, OP_RESTA, OP_MULT
 };
 
 
@@ -533,11 +561,12 @@ int yylex(void) {
 
         /* MOSTRAR O PROCESAR TOKEN */
         if (token_reconocido != 0) {
-            printf("[Línea %2d] | %-18s | %-8d | '%s'\n",
+            printf("[Linea %2d] | %-18s | %-8d | '%s'\n",
                    num_linea,
                    obtener_nombre_token(token_reconocido),
                    token_reconocido,
                    buffer);
+            return token_reconocido; /* Entrega el token a Bison */
         }
     }
 
@@ -554,7 +583,7 @@ void exportarTS(void) {
     FILE *f_ts = fopen("tabla_simbolos.txt", "w");
     
     printf("\n=================================================================\n");
-    printf("                  TABLA DE SÍMBOLOS GENERADA                     \n");
+    printf("                  TABLA DE SIMBOLOS GENERADA                     \n");
     printf("=================================================================\n");
     printf("%-20s | %-15s | %-20s | %-8s\n", "NOMBRE", "TIPO", "VALOR", "LONGITUD");
     printf("-----------------------------------------------------------------\n");
@@ -591,6 +620,9 @@ void exportarTS(void) {
  * cada token reconocido hasta llegar al final del archivo, e invoca la
  * exportación de la Tabla de Símbolos si no ocurrieron errores léxicos.
  ********************************************************************************/ 
+ 
+ 
+ /*
 int main(int argc, char *argv[]) {
     // Abre el archivo fuente en modo lectura
     if ((inputFile = fopen("ejemplo.raz", "r")) == NULL) {
@@ -604,14 +636,15 @@ int main(int argc, char *argv[]) {
     printf("=================================================================================\n");
     printf("%-8s | %-18s | %-8s | %-30s\n", "LÍNEA", "TOKEN", "CÓDIGO", "LEXEMA");
     printf("---------------------------------------------------------------------------------\n");
-
+*/
     /* 2. Se llama a yylex() UNA SOLA VEZ (el bucle externo de yylex procesa todo) */
-    yylex();
+//yylex();
 
     /* 3. Cierra el archivo al terminar */
-    fclose(inputFile);
+	//fclose(inputFile);
 
     /* Reporte de estado */
+    /*
     if (error_lexico == 0) {
         printf("\n - Compilación AL EXITOSA - \n");
         exportarTS();
@@ -621,6 +654,6 @@ int main(int argc, char *argv[]) {
 
     return 0;
     
-    
-    
+      
 }
+*/
