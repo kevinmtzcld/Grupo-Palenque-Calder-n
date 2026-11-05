@@ -283,6 +283,10 @@ void f4(void) {
         }
         ultimo_token_devuelto = ID;
         insertar_ts(buffer, "ID", "-", strlen(buffer));
+        
+       /* <-- NUEVO 3/11: Carga el nombre de la variable en la mochila de Bison */
+        strcpy(yylval.str_val, buffer);
+        
     }
 }
 
@@ -303,6 +307,11 @@ void f5(void) {
     } else {
         insertar_ts(buffer, "LIT_RACIONAL", buffer, strlen(buffer));
     }
+    
+    /* <-- NUEVO 3/11: Carga el número (ej: "5" o "3/4") en la mochila de Bison */
+    strcpy(yylval.str_val, buffer);
+    
+    
 }
 
 void f7a(void) { 
@@ -343,6 +352,10 @@ void f7b(void) {
 void f7c(void) {
     ultimo_token_devuelto = LIT_CADENA;
     insertar_ts(buffer, "LIT_CADENA", buffer, strlen(buffer));
+    
+    /* <-- NUEVO 3/11 : Carga el texto entre comillas en la mochila de Bison */
+    strcpy(yylval.str_val, buffer);
+    
 }
 
 void f8(void) {
