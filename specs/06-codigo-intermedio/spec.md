@@ -107,8 +107,8 @@ Se le pasa como parámetros la operación y sus dos operandos (`$1` y `$3`). La 
 **Ejemplos:**
 
 ```c
-crear_terceto("+", $1, $3);
-crear_terceto("/", $1, $3);
+crear_terceto("+", $1, $3);     //para la reducción de  "expresion OP_SUMA termino"
+crear_terceto("/", $1, $3);     //para la reducción de "termino OP_DIV factor"
 ```
 
 ### 4.8. Manejo de Saltos (SI/SINO)
