@@ -90,19 +90,100 @@ Los tercetos contemplan las siguientes operaciones:
   - `BI`: permite saltar a otra posición sin evaluar ninguna condición.
 - **Entrada y salida:** `MOSTRAR`.
 
-### 4.6. Resolución de saltos (Backpatching)
+### 4.6. Manejo de saltos (Backpatching)
 
-En las estructuras condicionales e iterativas, al generar un salto no siempre se conoce cuál será la posición exacta a la que debe dirigirse.
+Para completar los saltos incompletos se necesitará una función que modifique las posiciones 
+correspondientes, ya sea la primera (BI) o la segunda posicion (BF) del terceto.
+Para guardar el indice de los tercetos incompletos se necesitará una pila "pila_saltos"
+que apilará los indices de tercetos incompletos y desapilará los indices para completar
+los tercetos incompletos
 
-Para resolverlo se utiliza una técnica llamada *Backpatching*, que consiste en completar el destino del salto más adelante, cuando ya se conoce esa posición.
+### 4.7. Creación de Tercetos
+-Para las reglas como asignacion, expresión OP_SUMA termino, 
+expresion OP_RESTA termino, termino OP_MULT factor, termino OP_DIV factor
+Es cuando se creará el terceto correspondiente a la operación
+usando la funcion "crear_terceto" pasandole la operación, el primer operando $1
+y el segundo operando $3, esa función devolverá el indice del terceto creado.
+y en el NO TERMINAL se guardará una referencia al terceto creado [Ti] para usarlo
+en operaciones posteriores
 
-El procedimiento es el siguiente:
+Ejemplos: 
+crear_terceto("+", $1, $3)
+crear_terceto("/", $1, $3)
 
-1. Se genera el terceto del salto, dejando pendiente la posición de destino.
-2. Se guarda la posición de ese terceto en una estructura auxiliar.
-3. Cuando se conoce el lugar al que debe saltar, se recupera el terceto pendiente y se completa su destino.
+### 4.7. MANEJO DE SALTOS (SI/SINO)
 
-De esta manera, todos los saltos quedan correctamente relacionados con las posiciones correspondientes de la tabla.
+
+Regla marca_si bloque:
+
+Al reconocer la condición del SI, se genera un terceto BF (salto si es falso) con destino incompleto (?), ya que todavía no se conoce dónde debe saltar. Su índice se guarda en la pila de saltos.
+
+Al finalizar el bloque del SI, se completa el destino del BF mediante modificar_terceto, indicando la posición siguiente al bloque.
+
+Regla marca_si bloque PR_SINO:
+
+Al reconocer la condición, se genera un terceto BF con destino incompleto.
+
+Al reconocer el SINO, se completa el destino del BF, indicando dónde comienza el bloque SINO, ya que allí debe saltar si la condición es falsa.
+
+Además, se genera un terceto BI (salto incondicional) con destino incompleto, para evitar que se ejecute el bloque SINO cuando la condición sea verdadera. Su índice también se guarda en la pila.
+
+Regla bloque:
+
+Al finalizar el bloque SINO, se completa el destino del terceto BI, indicando la posición siguiente al bloque, para continuar la ejecución.
+
+
+### 4.7. MANEJO DE SALTOS (MIENTRAS)
+
+
+Para implementar un MIENTRAS se necesitan dos saltos:
+- BF: se genera al reconocer la condición, con destino incompleto. Si la condición es falsa, debe saltar fuera del ciclo.
+- BI: se genera al finalizar el bloque del ciclo. Su destino es el comienzo de la evaluación de la condición, para repetir la iteración.
+Al reconocer el MIENTRAS, se guarda la posición del terceto donde comienza la evaluación de la condición.
+
+Al finalizar el bloque, se genera el BI utilizando esa posición como destino. Luego, se completa el BF con la posición siguiente al ciclo, que indica dónde debe continuar la ejecución cuando la condición sea falsa.
+
+Los índices de los saltos pendientes se almacenan en la pila para poder completarlos posteriormente.
+
+### 4.7. MANEJO DE AND Y OR
+La implementación se realizó modificando la gramática mediante una jerarquía de reglas (condicion, 
+cond_or, cond_and y cond_factor) que permite procesar las condiciones desde sus componentes más 
+simples hasta formar la expresión completa, se pasan los resultados desde abajo hacia arriba.
+primero, cond_factor reconoce las comparaciones individuales o las condiciones entre paréntesis 
+y copia sus referencias a los tercetos mediante strcpy(). Luego, cond_and recibe esos resultados y,
+cuando encuentra un operador AND, genera un nuevo terceto mediante crear_terceto("AND", $1, $3),
+donde $1 y $3 representan las referencias de las condiciones izquierda y derecha. Mediante sprintf()
+guarda la referencia al nuevo terceto ([Tn]) para transmitirla al nivel superior. después, 
+cond_or realiza el mismo procedimiento cuando encuentra un operador OR, utilizando los resultados 
+recibidos de cond_and para generar el terceto correspondiente. Esta separación de reglas permite 
+respetar la prioridad de los operadores, ya que AND tiene prioridad sobre OR. Finalmente, condicion
+recibe y transmite la referencia al terceto que representa toda la expresión lógica, para que pueda 
+ser utilizada por el terceto BF en la evaluación de la condición y la realización del salto correspondiente.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ## 5. Criterios de aceptación
 
