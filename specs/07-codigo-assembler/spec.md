@@ -156,7 +156,7 @@ El proceso de traducción recorre secuencialmente la tabla de tercetos desde `0`
     mov [rel T0_den], ebx       ; Guarda el denominador de T0
 
 
-ETIQ_1:                         ; Marca el inicio del terceto T1: c = [T0]
+### ETIQ_1:                         ; Marca el inicio del terceto T1: c = [T0]
 
     mov eax, [rel T0_num]       ; Recupera el numerador del resultado
     mov ebx, [rel T0_den]       ; Recupera el denominador del resultado
