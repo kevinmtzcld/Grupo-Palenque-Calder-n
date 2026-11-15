@@ -240,15 +240,15 @@ La sentencia `mostrar` se resuelve mediante interoperabilidad con `printf` de la
 ```nasm
 ; Ejemplo para mostrar("Resultado:", c);
 
-ETIQ_4: ; [MOSTRAR_STR, Resultado:, -]
-    lea rcx, [rel fmt_str]
-    lea rdx, [rel STR_0]
-    call printf
+ETIQ_4:                         ; [MOSTRAR_STR, "Resultado:", -]
+    lea rcx, [rel fmt_str]      ; Carga en RCX la dirección del formato de impresión (%s).
+    lea rdx, [rel STR_0]        ; Carga en RDX la dirección de la cadena "Resultado:".
+    call printf                 ; Llama a printf para mostrar el texto en consola.
 
-ETIQ_5: ; [MOSTRAR_ID, c, -]
-    mov ecx, [rel c_num]
-    mov edx, [rel c_den]
-    call imprimir_racional
+ETIQ_5:                         ; [MOSTRAR_ID, c, -]
+    mov ecx, [rel c_num]        ; Carga el numerador de la variable c en ECX.
+    mov edx, [rel c_den]        ; Carga el denominador de la variable c en EDX.
+    call imprimir_racional     ; Llama a la rutina que imprime c en formato numerador/denominador.
 ```
 
 ### 4.6. Manejo de funciones, punto de entrada (`principal`) y retornos (Regla C.5)
