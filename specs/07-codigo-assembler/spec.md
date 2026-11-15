@@ -258,7 +258,7 @@ El lenguaje Razio admite funciones sin parámetros ni variables locales que oper
 - **Salto al punto de entrada (`IR_PRINCIPAL` / `PRINCIPAL`):** Tras ejecutar las asignaciones iniciales de variables globales, `jmp ETIQ_PRINCIPAL` salta por encima de las definiciones de funciones ubicadas antes de `principal()`, evitando su ejecución accidental al iniciar el programa.
 - **Definición y Retorno (`FUNC_INICIO`, `RETORNAR`, `FUNC_FIN`):** Cada función `def f()` emite la etiqueta `FUNC_f:` y reserva 40 bytes en pila (`sub rsp, 40`). Al procesar `retornar(val)`, normaliza el racional dejando el numerador en `EAX` y el denominador en `EBX`, restaura la pila (`add rsp, 40`) y ejecuta `ret`.
 - **Invocación (`CALL`):** Emite `call FUNC_f` y guarda el par devuelto (`EAX`, `EBX`) en el temporal `T<i>_num` y `T<i>_den` correspondiente.
--**Efectos laterales:** Como las variables se almacenan en direcciones fijas dentro de la sección .data y no existen variables locales, las funciones modifican directamente las variables globales. Estos cambios permanecen después de finalizar la función mediante ret y afectan al resto del programa, incluyendo a principal() y a otras funciones.
+- **Efectos laterales:** Como las variables se almacenan en direcciones fijas dentro de la sección .data y no existen variables locales, las funciones modifican directamente las variables globales. Estos cambios permanecen después de finalizar la función mediante ret y afectan al resto del programa, incluyendo a principal() y a otras funciones.
 
 ---
 
