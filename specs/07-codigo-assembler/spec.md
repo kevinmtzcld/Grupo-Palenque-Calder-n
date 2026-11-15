@@ -102,43 +102,69 @@ El proceso de traducción recorre secuencialmente la tabla de tercetos desde `0`
 - **Traducción generada en Assembler (NASM x64):**
 
   ```nasm
-  ETIQ_0: ; [+, a, b]
-      mov eax, [rel a_num]
-      mov ebx, [rel a_den]
-      movsxd r12, eax
-      movsxd r13, ebx
-      mov eax, [rel b_num]
-      mov ebx, [rel b_den]
-      movsxd r14, eax
-      movsxd r15, ebx
-      ; num = a_num * b_den + b_num * a_den (con control de overflow en 64 bits)
-      mov rax, r12
-      imul rax, r15
-      call verificar_overflow_64
-      mov rcx, rax
-      mov rax, r14
-      imul rax, r13
-      call verificar_overflow_64
-      add rcx, rax
-      mov rax, rcx
-      call verificar_overflow_64
-      push rax
-      ; den = a_den * b_den
-      mov rax, r13
-      imul rax, r15
-      call verificar_overflow_64
-      mov ebx, eax
-      pop rax
-      call normalizar_racional      ; Simplifica por MCD y normaliza signo
-      mov [rel T0_num], eax
-      mov [rel T0_den], ebx
+  ETIQ_0:                         ; Marca el inicio del terceto T0: a + b
 
-  ETIQ_1: ; [=, c, [T0]]
-      mov eax, [rel T0_num]
-      mov ebx, [rel T0_den]
-      call normalizar_racional
-      mov [rel c_num], eax
-      mov [rel c_den], ebx
+    ; Recuperamos el numerador y denominador de a
+    mov eax, [rel a_num]        ; Carga el numerador de a en EAX
+    mov ebx, [rel a_den]        ; Carga el denominador de a en EBX
+
+    ; Extendemos los valores de 32 a 64 bits
+    movsxd r12, eax             ; Copia el numerador de a a R12 (64 bits)
+    movsxd r13, ebx             ; Copia el denominador de a a R13 (64 bits)
+
+    ; Recuperamos el numerador y denominador de b
+    mov eax, [rel b_num]        ; Carga el numerador de b en EAX
+    mov ebx, [rel b_den]        ; Carga el denominador de b en EBX
+
+    ; Extendemos los valores de 32 a 64 bits
+    movsxd r14, eax             ; Copia el numerador de b a R14 (64 bits)
+    movsxd r15, ebx             ; Copia el denominador de b a R15 (64 bits)
+
+    ; Calculamos el numerador de la suma:
+    ; (a_num * b_den) + (b_num * a_den)
+
+    mov rax, r12                ; Carga el numerador de a en RAX
+    imul rax, r15               ; Multiplica a_num * b_den
+    call verificar_overflow_64  ; Comprueba si hubo desbordamiento
+
+    mov rcx, rax                ; Guarda el primer producto en RCX
+
+    mov rax, r14                ; Carga el numerador de b en RAX
+    imul rax, r13               ; Multiplica b_num * a_den
+    call verificar_overflow_64  ; Comprueba si hubo desbordamiento
+
+    add rcx, rax                ; Suma los dos productos
+    mov rax, rcx                ; Coloca el numerador resultante en RAX
+    call verificar_overflow_64  ; Comprueba el resultado de la suma
+
+    push rax                    ; Guarda temporalmente el numerador en la pila
+
+    ; Calculamos el denominador:
+    ; a_den * b_den
+
+    mov rax, r13                ; Carga el denominador de a
+    imul rax, r15               ; Multiplica a_den * b_den
+    call verificar_overflow_64  ; Comprueba si hubo desbordamiento
+
+    mov ebx, eax                ; Guarda el denominador en EBX
+    pop rax                     ; Recupera el numerador desde la pila
+
+    call normalizar_racional    ; Simplifica la fracción y normaliza su signo
+
+    ; Guardamos el resultado en el temporal T0
+    mov [rel T0_num], eax       ; Guarda el numerador de T0
+    mov [rel T0_den], ebx       ; Guarda el denominador de T0
+
+
+ETIQ_1:                         ; Marca el inicio del terceto T1: c = [T0]
+
+    mov eax, [rel T0_num]       ; Recupera el numerador del resultado
+    mov ebx, [rel T0_den]       ; Recupera el denominador del resultado
+
+    call normalizar_racional    ; Asegura que el racional esté normalizado
+
+    mov [rel c_num], eax        ; Guarda el numerador en c
+    mov [rel c_den], ebx        ; Guarda el denominador en c
   ```
 
 ### 4.4. Manejo de comparaciones exactas y estructuras de control (`si`/`sino` y `mientras`)
@@ -159,34 +185,50 @@ Dado que el código intermedio ya resolvió las direcciones de salto mediante *b
 - **Traducción generada en Assembler (NASM x64):**
 
   ```nasm
-  ETIQ_0: ; [>, a, b]
-      movsxd r12, dword [rel a_num]
-      movsxd r13, dword [rel a_den]
-      movsxd r14, dword [rel b_num]
-      movsxd r15, dword [rel b_den]
-      mov rax, r12
-      imul rax, r15
-      mov rcx, r14
-      imul rcx, r13
-      cmp rax, rcx
-      setg al
-      movzx eax, al
-      mov [rel T0_num], eax
-      mov dword [rel T0_den], 1
+  ETIQ_0: ; Terceto [T0] (>, a, b) - Comparar si a es mayor que b
 
-  ETIQ_1: ; [BF, [T0], [T3]]
-      mov eax, [rel T0_num]
-      cmp eax, 0
-      je ETIQ_3
+    ; Recuperar numerador y denominador de la variable a
+    movsxd r12, dword [rel a_num] ; Cargar numerador de a en R12 (64 bits)
+    movsxd r13, dword [rel a_den] ; Cargar denominador de a en R13 (64 bits)
 
-  ETIQ_2: ; [=, c, 1]
-      mov eax, 1
-      mov ebx, 1
-      call normalizar_racional
-      mov [rel c_num], eax
-      mov [rel c_den], ebx
+    ; Recuperar numerador y denominador de la variable b
+    movsxd r14, dword [rel b_num] ; Cargar numerador de b en R14 (64 bits)
+    movsxd r15, dword [rel b_den] ; Cargar denominador de b en R15 (64 bits)
 
-  ETIQ_3:
+    ; Realizar el producto cruzado para comparar los racionales
+    mov rax, r12                   ; Copiar numerador de a
+    imul rax, r15                  ; Multiplicar numerador de a por denominador de b
+
+    mov rcx, r14                   ; Copiar numerador de b
+    imul rcx, r13                  ; Multiplicar numerador de b por denominador de a
+
+    ; Comparar los resultados de los productos cruzados
+    cmp rax, rcx                   ; Comparar ambos valores
+    setg al                        ; Guardar 1 si a > b; 0 si no se cumple
+
+    ; Guardar el resultado de la comparación en el temporal T0
+    movzx eax, al                  ; Extender el resultado de 8 a 32 bits
+    mov [rel T0_num], eax          ; Guardar 1 (verdadero) o 0 (falso)
+    mov dword [rel T0_den], 1      ; El denominador del resultado lógico es 1
+
+
+ETIQ_1: ; Terceto [T1] (BF, [T0], [T3]) - Saltar si la condición es falsa
+
+    mov eax, [rel T0_num]          ; Recuperar el resultado de la comparación
+    cmp eax, 0                     ; Comprobar si el resultado es falso (0)
+    je ETIQ_3                      ; Si es falso, saltar al final del bloque
+
+
+ETIQ_2: ; Terceto [T2] (=, c, 1) - Asignar 1 a la variable c
+
+    mov eax, 1                     ; Cargar numerador 1
+    mov ebx, 1                     ; Cargar denominador 1
+    call normalizar_racional       ; Normalizar el racional 1/1
+    mov [rel c_num], eax           ; Guardar numerador en c
+    mov [rel c_den], ebx           ; Guardar denominador en c
+
+
+ETIQ_3: ; Fin del bloque si
   ```
 
 ### 4.5. Generación de la sentencia de salida (`mostrar`)
