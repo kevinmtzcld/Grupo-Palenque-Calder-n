@@ -157,7 +157,7 @@ El proceso de traducción recorre secuencialmente la tabla de tercetos desde `0`
 
 
 ### ETIQ_1:                         ; Marca el inicio del terceto T1: c = [T0]
-
+```
     mov eax, [rel T0_num]       ; Recupera el numerador del resultado
     mov ebx, [rel T0_den]       ; Recupera el denominador del resultado
 
@@ -166,7 +166,6 @@ El proceso de traducción recorre secuencialmente la tabla de tercetos desde `0`
     mov [rel c_num], eax        ; Guarda el numerador en c
     mov [rel c_den], ebx        ; Guarda el denominador en c
   ```
-
 ### 4.4. Manejo de comparaciones exactas y estructuras de control (`si`/`sino` y `mientras`)
 
 Dado que el código intermedio ya resolvió las direcciones de salto mediante *backpatching* (`[Td]`), el generador traduce cada terceto `i` precedido por `ETIQ_i:`.
