@@ -7,10 +7,9 @@
 ---
 
 ## 1. Objetivo
+El objetivo de este módulo es transformar los tercetos generados por el compilador, junto con la información de la Tabla de Símbolos, en código Assembler para Windows de 64 bits (x86-64), utilizando NASM.
 
-El objetivo de este módulo es recibir el código intermedio (representado como un arreglo lineal de estructuras de **Tercetos**) en conjunto con la **Tabla de Símbolos**, y traducirlo de manera estricta y sistemática a código fuente en lenguaje Assembler x86-64 (arquitectura de 64 bits, formato NASM `-f win64`).
-
-Este código generado debe ser completamente funcional, cumplir con las reglas aritméticas y de forma normal del tipo racional exacto establecidas para el Grupo C, y ser apto para ensamblarse y linkearse mediante GCC en entornos Windows para su ejecución final.
+El código generado debe poder realizar las operaciones del lenguaje Razio, respetando las reglas de los números racionales, como la simplificación de fracciones y el control de errores. Finalmente, debe poder ensamblarse y enlazarse mediante GCC para obtener un archivo ejecutable en Windows.
 
 ---
 
@@ -20,17 +19,16 @@ Este módulo abarca estrictamente la etapa final de generación de código del c
 
 ### 2.1. Lo que SÍ incluye (In-scope)
 
-- La lectura y el procesamiento secuencial de la tabla de tercetos (`tabla_tercetos[]`) y la Tabla de Símbolos (`tabla_simbolos[]`) provistas por las fases anteriores.
-- La generación de un archivo de código fuente en Assembler (`salida.asm`) compatible con NASM (x86-64, formato `win64`).
-- La emisión de una biblioteca fija de rutinas auxiliares en `.text` para garantizar las reglas de forma normal del racional (simplificación por MCD mediante el algoritmo de Euclides, signo en el numerador, representación única `0/1`), control previo de overflow en 64 bits y aborto ante división por cero en tiempo de ejecución.
-- La traducción de operaciones aritméticas racionales (`+`, `-`, `*`, `/`) con simplificación cruzada previa, comparaciones exactas sin punto flotante, operadores lógicos (`AND`, `OR`), estructuras de control (`si`/`sino` y `mientras`), sentencia de salida (`mostrar`) y llamadas/retornos de funciones sin parámetros (`def`, `retornar`, `principal`).
-- El mapeo de variables globales, constantes de cadena y resultados temporales de tercetos bajo el modelo de memoria estática.
+- Leer y recorrer los tercetos (tabla_tercetos[]) y la Tabla de Símbolos (tabla_simbolos[]) generados en las etapas anteriores del compilador.
+- Generar el archivo salida.asm con las instrucciones necesarias para NASM, utilizando la arquitectura de 64 bits para Windows.
+- Incorporar rutinas auxiliares para trabajar correctamente con números racionales. Esto incluye simplificar las fracciones mediante el algoritmo de Euclides, mantener el signo en el numerador y representar el cero como 0/1.
+- Controlar posibles desbordamientos numéricos (overflow) y evitar divisiones por cero durante la ejecución del programa.
+- Traducir las operaciones aritméticas (+, -, *, /), las comparaciones, los operadores lógicos (AND, OR), las estructuras de control (si, sino, mientras), la instrucción mostrar y las llamadas y retornos de funciones sin parámetros.
+- Reservar espacio en memoria para las variables globales, las cadenas de texto y los resultados intermedios de los tercetos.
 
 ### 2.2. Lo que NO incluye (Out-of-scope)
 
-- Validaciones léxicas, sintácticas o semánticas estáticas (variables no declaradas, división por literal `/0` o llamadas recursivas directas), tareas exclusivas de los analizadores previos.
-- Uso de instrucciones de punto flotante (`x87` o `SSE`), prohibidas por la consigna de exactitud racional.
-- Soporte para memoria dinámica, asignación en heap, marcos de pila (*stack frames*) para variables locales o funciones recursivas (Decisiones D4 y C.5).
+- Realizar validaciones léxicas, sintácticas o semánticas, ya que estas corresponden a las etapas anteriores del compilador.
 
 ---
 
