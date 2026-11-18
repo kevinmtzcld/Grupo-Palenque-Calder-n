@@ -68,7 +68,10 @@ El código Assembler generado está diseñado para ejecutarse bajo los siguiente
 
 - **Arquitectura:** x86-64 (64 bits).
 - **Sintaxis y Formato:** NASM (`-f win64`).
-- **Entorno:** Windows, ensamblado con NASM y linkeado mediante GCC (MinGW-w64) para interoperar con el runtime estándar de C (`printf` y `exit`) bajo la convención de llamadas ABI de Microsoft x64 (primeros argumentos en `RCX`, `RDX`, `R8`, *shadow space* de 32 bytes y direccionamiento relativo `[rel etiqueta]`).
+- **Entorno:** Windows, utilizando NASM para ensamblar el código y GCC (MinGW-w64) para generar el ejecutable.
+- **Comunicación con C:** Se utilizan las funciones printf y exit de la biblioteca estándar de C.
+- **Convención de llamadas:** Se utiliza la convención Microsoft x64, donde los primeros argumentos se pasan mediante los registros RCX, RDX y R8, y se reserva un espacio de 32 bytes (shadow space) para las llamadas a funciones. También se utiliza el direccionamiento relativo ([rel etiqueta]) para acceder a los datos.
+
 
 ### 4.2. Modelo de memoria estática y representación de racionales
 
