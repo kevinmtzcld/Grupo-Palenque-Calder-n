@@ -75,25 +75,40 @@ El código Assembler generado está diseñado para ejecutarse bajo los siguiente
 
 ### 4.2. Modelo de memoria estática y representación de racionales
 
-El compilador del lenguaje Razio utiliza memoria estática plana, lo que implica que no se utiliza memoria dinámica ni marcos de pila (*stack frames*) dinámicos para la gestión de las variables.
+El compilador utiliza un modelo de memoria estática, es decir, reserva el espacio necesario para las variables y los resultados desde el inicio del programa. No utiliza memoria dinámica para almacenar estos datos.
 
-- **Representación de Racionales (32 bits con signo — D1 y D2):** Cada variable racional `x` declarada en la Tabla de Símbolos se almacena en la sección `.data` como un par contiguo de enteros dobles de 32 bits (`dd`), representando numerador y denominador respectivamente (rango $-2.147.483.648$ a $2.147.483.647$).
-
+- **Representación de Racionales (32 bits con signo):** Cada variable racional declarada se almacena en la sección .data mediante dos valores enteros de 32 bits (dd): uno para el numerador y otro para el denominador. Ambos tienen signo y permiten representar valores entre -2.147.483.648 y 2.147.483.647.
+  Por ejemplo, para una variable x se reserva:
+  
 ```nasm
 x_num dd 0
 x_den dd 1
 ```
+x_num almacena el numerador y x_den el denominador. Inicialmente, la variable representa 0/1.
 
-- **Temporales de Tercetos (`T0` a `Tn`):** Cada terceto `i` dispone de su propio par estático `T<i>_num dd 0` y `T<i>_den dd 1` en `.data` para resguardar resultados intermedios sin conflictos de registros en expresiones anidadas.
-- **Literales de Cadena y Mensajes del Sistema:** Los literales de texto utilizados en `mostrar` se almacenan en `.data` como cadenas terminadas en byte nulo (`STR_k db "...", 0`), junto con los especificadores de formato (`fmt_rac db "%d/%d", 10, 0`, `fmt_str db "%s", 10, 0`) y los mensajes obligatorios de error en ejecución (`err_ovf` y `err_cero`).
+- **Temporales de Tercetos (`T0` a `Tn`):** Cada terceto tiene su propio espacio de memoria para guardar el resultado de las operaciones. Se utilizan dos valores, uno para el numerador y otro para el denominador, identificados con el número del terceto.
+ Por ejemplo:
+```nasm
+T0_num dd 0
+T0_den dd 1
+```
+- **Literales de Cadena y Mensajes del Sistema:** Los textos utilizados por la instrucción mostrar se almacenan en la sección .data, terminados en un byte nulo (0). También se guardan los formatos necesarios para mostrar racionales y cadenas de texto, junto con los mensajes que se utilizan para informar errores durante la ejecución, como el desbordamiento numérico (err_ovf) y la división por cero (err_cero).
+```
+section .data
+
+STR_0 db "Hola mundo", 0       ; Texto utilizado por mostrar.
+fmt_str db "%s", 10, 0         ; Formato para mostrar cadenas.
+fmt_rac db "%d/%d", 10, 0      ; Formato para mostrar racionales.
+err_ovf db "Error: overflow", 0 ; Mensaje de desbordamiento.
+err_cero db "Error: division por cero", 0 ; Mensaje de división por cero.
+```
 
 ### 4.3. Traducción de operadores, normalización y control previo de overflow
 
-El proceso de traducción recorre secuencialmente la tabla de tercetos desde `0` hasta `indice_terceto - 1`, emitiendo una etiqueta `ETIQ_i:` antes de cada instrucción intermedia.
-
-- **Aritmética en 64 bits con alarma previa de Overflow (Regla C.2):** Los operandos de 32 bits se extienden con signo a registros de 64 bits (`movsxd r12, eax` ... `r15`) para realizar productos cruzados y sumas/restas sin desbordamiento físico de hardware. Antes de reducir a 32 bits, se invoca la rutina `verificar_overflow_64`, que comprueba que `RAX` esté dentro de $[-2.147.483.648, 2.147.483.647]$; si excede el rango, salta a `error_overflow` y aborta con `exit(1)` antes de que ocurra truncamiento.
-- **Simplificación Cruzada en `*` y `/` (Regla C.2.9):** Antes de multiplicar $(a/b) \cdot (c/d)$, se invoca `mcd_64_positivo` para reducir cruzadamente $a$ con $d$ y $c$ con $b$, minimizando el crecimiento de los valores intermedios.
-- **Forma Normal Obligatoria (Regla C.1):** Tras cada asignación o cálculo aritmético se invoca `normalizar_racional` (entrada: `EAX` = num, `EBX` = den), que verifica `EBX == 0` (abortando en `error_div_cero`), normaliza `0/x` a `0/1`, traslada el signo negativo al numerador si `EBX < 0` y divide ambos por su MCD mediante el algoritmo de Euclides.
+El generador recorre la tabla de tercetos en orden, desde el primero hasta el último. Para cada terceto genera las instrucciones Assembler correspondientes y coloca una etiqueta (ETIQ_i) que permite identificar su posición dentro del código.
+- **Aritmética en 64 bits con alarma previa de Overflow (Regla C.2):** Para realizar las operaciones aritméticas, los valores de 32 bits se extienden a registros de 64 bits, lo que permite trabajar con resultados intermedios más grandes. Antes de guardar el resultado, se ejecuta la función verificar_overflow_64, que comprueba que el valor esté dentro del rango permitido para un entero de 32 bits. Si se supera ese límite, se muestra un mensaje de error mediante error_overflow y se detiene la ejecución del programa con exit(1).
+- **Simplificación Cruzada en `*` y `/` (Regla C.2.9):** Antes de realizar operaciones, se simplifican las fracciones cruzando el numerador de una con el denominador de la otra. Esto permite reducir los valores intermedios y disminuir el riesgo de overflow.
+- **Forma Normal Obligatoria (Regla C.1):** Después de cada asignación u operación aritmética, se ejecuta la función normalizar_racional, que recibe el numerador en EAX y el denominador en EBX. Esta función verifica que el denominador no sea cero y, en ese caso, informa el error mediante error_div_cero y detiene la ejecución. Además, representa el cero como 0/1, coloca el signo negativo en el numerador cuando corresponde y simplifica la fracción utilizando el máximo común divisor (MCD), calculado mediante el algoritmo de Euclides.
 
 #### Ejemplo práctico de traducción: `c = a + b`
 
@@ -171,10 +186,11 @@ ETIQ_1:                         ; Marca el inicio del terceto T1: c = [T0]
 
 ### 4.4. Manejo de comparaciones exactas y estructuras de control (`si`/`sino` y `mientras`)
 
-Dado que el código intermedio ya resolvió las direcciones de salto mediante *backpatching* (`[Td]`), el generador traduce cada terceto `i` precedido por `ETIQ_i:`.
+El generador recorre los tercetos en orden y utiliza las etiquetas ETIQ_i para identificar la posición de cada instrucción. Las direcciones de los saltos ya fueron establecidas durante la generación del código intermedio mediante el mecanismo de backpatching.
 
-- **Comparaciones exactas sin punto flotante (Regla C.1.5):** Para `>`, `<`, `>=`, `<=`, `==`, `!=`, se calcula en 64 bits el producto cruzado $num_1 \cdot den_2$ contra $num_2 \cdot den_1$, comparando con `cmp rax, rcx` y almacenando `1` o `0` en `T<i>_num` mediante instrucciones `setg`, `setl`, `setge`, `setle`, `sete` o `setne`.
-- **Operadores lógicos (`AND`, `OR`) y saltos (`BF`, `BI`):** `BF` evalúa si el temporal de condición es `0` (`cmp eax, 0` / `je ETIQ_d`) para saltar al bloque `sino` o al final de la estructura; `BI` emite un salto incondicional `jmp ETIQ_d`.
+- **Comparaciones exactas sin punto flotante (Regla C.1.5):** Para realizar las comparaciones (>, <, >=, <=, ==, !=), se utiliza el producto cruzado entre los numeradores y denominadores de los racionales. Los cálculos se realizan en 64 bits para comparar los valores sin convertirlos a punto flotante. El resultado se guarda en el temporal correspondiente como 1 si la condición es verdadera o 0 si es falsa.
+
+- **Operadores lógicos (`AND`, `OR`) y saltos (`BF`, `BI`):** Los operadores AND y OR permiten combinar condiciones lógicas y guardar el resultado en un temporal. El terceto BF comprueba si el resultado de una condición es 0; si lo es, realiza un salto hacia la etiqueta indicada. Se utiliza para controlar el flujo de las estructuras si y mientras. Por otro lado, BI realiza un salto incondicional mediante jmp, permitiendo continuar la ejecución desde la etiqueta correspondiente.
 
 #### Ejemplo práctico: `si (a > b) { c = 1; }`
 
@@ -233,10 +249,10 @@ ETIQ_3: ; Fin del bloque si
 
 ### 4.5. Generación de la sentencia de salida (`mostrar`)
 
-La sentencia `mostrar` se resuelve mediante interoperabilidad con `printf` de la biblioteca estándar de C (MinGW-w64), respetando el *shadow space* de 32 bytes de Windows x64.
+La instrucción mostrar permite imprimir variables racionales y cadenas de texto en pantalla. Para hacerlo, el código generado utiliza la función printf de la biblioteca estándar de C.
 
-- **Impresión de Variables Racionales (`MOSTRAR_ID`):** Carga `<id>_num` en `ECX` y `<id>_den` en `EDX` e invoca la rutina auxiliar `imprimir_racional`, la cual llama a `printf("%d/%d\n", num, den)`.
-- **Impresión de Cadenas Literales (`MOSTRAR_STR`):** Carga la dirección de `fmt_str` (`"%s\n"`) en `RCX` y la etiqueta `STR_k` correspondiente en `RDX`, invocando `printf`.
+- **Impresión de Variables Racionales (`MOSTRAR_ID`):** El generador obtiene el numerador y el denominador de la variable y los pasa a la función auxiliar imprimir_racional. Esta función utiliza printf para mostrar la fracción con el formato numerador/denominador.
+- **Impresión de Cadenas Literales (`MOSTRAR_STR`):** El generador obtiene la dirección de la cadena almacenada en STR_k y la pasa a printf, utilizando el formato fmt_str ("%s\n"). De esta manera, se muestra el texto en pantalla.
 
 ```nasm
 ; Ejemplo para mostrar("Resultado:", c);
@@ -256,10 +272,10 @@ ETIQ_5:                         ; [MOSTRAR_ID, c, -]
 
 El lenguaje Razio admite funciones sin parámetros ni variables locales que operan sobre memoria estática global y pueden retornar un valor racional.
 
-- **Salto al punto de entrada (`IR_PRINCIPAL` / `PRINCIPAL`):** Tras ejecutar las asignaciones iniciales de variables globales, `jmp ETIQ_PRINCIPAL` salta por encima de las definiciones de funciones ubicadas antes de `principal()`, evitando su ejecución accidental al iniciar el programa.
-- **Definición y Retorno (`FUNC_INICIO`, `RETORNAR`, `FUNC_FIN`):** Cada función `def f()` emite la etiqueta `FUNC_f:` y reserva 40 bytes en pila (`sub rsp, 40`). Al procesar `retornar(val)`, normaliza el racional dejando el numerador en `EAX` y el denominador en `EBX`, restaura la pila (`add rsp, 40`) y ejecuta `ret`.
-- **Invocación (`CALL`):** Emite `call FUNC_f` y guarda el par devuelto (`EAX`, `EBX`) en el temporal `T<i>_num` y `T<i>_den` correspondiente.
-- **Efectos laterales:** Como las variables se almacenan en direcciones fijas dentro de la sección .data y no existen variables locales, las funciones modifican directamente las variables globales. Estos cambios permanecen después de finalizar la función mediante ret y afectan al resto del programa, incluyendo a principal() y a otras funciones.
+- **Salto al punto de entrada (`IR_PRINCIPAL` / `PRINCIPAL`):** Primero se realizan las asignaciones iniciales de las variables globales. Luego, se ejecuta jmp ETIQ_PRINCIPAL, que permite saltar directamente al comienzo de principal(), evitando que se ejecuten las definiciones de las funciones que aparecen antes.
+- **Definición y Retorno (`FUNC_INICIO`, `RETORNAR`, `FUNC_FIN`):** Al comenzar una función, FUNC_INICIO genera una etiqueta FUNC_f que identifica dónde empieza su código y reserva 40 bytes en la pila. Cuando se ejecuta retornar(val), se prepara el valor racional que se quiere devolver, guardando el numerador en EAX y el denominador en EBX. Después, se libera el espacio reservado en la pila y se ejecuta ret para volver al lugar desde donde se llamó a la función. Por último, FUNC_FIN marca el final del código de la función.
+- **Invocación (`CALL`):** Cuando se llama a una función, se genera la instrucción call FUNC_f, que transfiere la ejecución a su código. Una vez que la función devuelve el resultado, el numerador (EAX) y el denominador (EBX) se guardan en el temporal correspondiente (T<i>_num y T<i>_den), para poder utilizar ese valor en otras operaciones.
+- **Efectos laterales:** Como Razio no utiliza variables locales, las funciones trabajan directamente con las variables globales almacenadas en la sección .data. Por lo tanto, si una función modifica una variable, ese cambio se mantiene después de que termina su ejecución y puede ser utilizado por principal() o por cualquier otra función.
 
 ---
 
@@ -267,12 +283,12 @@ El lenguaje Razio admite funciones sin parámetros ni variables locales que oper
 
 Para considerar que el módulo de Generación de Código Assembler es correcto y funcional, se deben cumplir los siguientes criterios de validación:
 
-1. **Consumo íntegro de la Tabla de Tercetos:** El módulo debe procesar secuencialmente la totalidad de los tercetos generados sin omitir instrucciones ni desalinear la pila x64 (`RSP`).
+1. **Procesamiento de la Tabla de Tercetos:** El generador debe recorrer y procesar todos los tercetos en el orden correspondiente, sin omitir instrucciones ni producir errores en el manejo de la pila.
 
-2. **Generación sintáctica correcta del `.asm`:** El archivo `salida.asm` generado debe cumplir estrictamente con la sintaxis de NASM para x86-64 (`-f win64`), permitiendo su ensamblaje y linkeo limpio con `nasm` y `gcc` sin errores ni advertencias.
+2. **Generación correcta del `salida.asm`:** El archivo salida.asm debe respetar la sintaxis de NASM para Windows de 64 bits (-f win64). Además, debe poder ensamblarse y enlazarse mediante nasm y gcc sin errores.
 
-3. **Cumplimiento de forma normal y simplificación (Regla C.1):** Todo racional mostrado por consola debe estar simplificado por su MCD (ej. `1/2 + 1/3` muestra `5/6`; `2/4` muestra `1/2`), con denominador positivo y el cero representado como `0/1`.
+3. **Cumplimiento de forma normal y simplificación:** Los números racionales deben mostrarse siempre simplificados, con el denominador positivo y el cero representado como 0/1. Por ejemplo, 1/2 + 1/3 debe mostrar 5/6, mientras que 2/4 debe mostrar 1/2.
 
-4. **Detección previa de overflow y división por cero (Reglas C.1.3 y C.2):** Ante operaciones que superen el rango de 32 bits con signo ($[-2.147.483.648, 2.147.483.647]$) o divisiones por un racional nulo en ejecución, el ejecutable debe emitir el mensaje de error correspondiente y cancelar su ejecución con código de salida distinto de cero.
+4. **Detección previa de overflow y división por cero:** El programa debe detectar cuando una operación supera el rango permitido para un entero de 32 bits o cuando se intenta dividir por cero. En esos casos, debe mostrar el mensaje de error correspondiente y detener la ejecución con un código de salida distinto de cero.
 
-5. **Validación sobre la batería de pruebas obligatoria:** El ejecutable resultante debe superar los 3 programas generales (estructuras de control anidadas, lógica booleana y funciones con retorno) y los 4 casos específicos exigidos para el Grupo C.
+5. **Ejecución de pruebas obligatoria:** El ejecutable generado debe superar las pruebas obligatorias: tres programas generales que evalúan estructuras de control anidadas, lógica booleana y funciones con retorno, además de los cuatro casos específicos correspondientes al Grupo C.
