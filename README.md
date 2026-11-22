@@ -1,8 +1,6 @@
 # Compilador 2026
 
 ## Integrantes
-
-## Integrantes
 * **Calderón Martínez, Kevin**
 
 ## TP asignado
