@@ -1,0 +1,29 @@
+
+----------------------------------------------------------------------------
+3.SEMANTICO, resultado no declarado
+----------------------------------------------------------------------------
+racional a = 1/2, b = 3/4;
+
+principal() {
+    resultado = a + b;
+    mostrar("Valor: ", a);
+}
+
+
+----------------------------------------------------------------------------
+***SEMANTICO: FUNCION SE LLAMA ASI MISMA
+----------------------------------------------------------------------------
+racional x = 1/2, limite = 5/2;
+
+def incrementar() {
+    si (x < limite) {
+        x = x + 1/2;
+        incrementar();
+    }
+    retornar (x);
+}
+
+principal() {
+    incrementar();
+    mostrar("Resultado final: ", x);
+}
