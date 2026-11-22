@@ -79,7 +79,7 @@ Para interpretar las acciones semánticas de cada producción, se utilizan los s
 - **Acción:** Registra el identificador en la tabla de variables declaradas (`registrar_variable($1)`).
 
 - **Declaración con inicialización positiva (`variable: ID OP_ASIG LIT_RACIONAL`):**
-  - **Acción:** Registra la variable y genera el terceto de asignación inicial `(=, ID, LIT_RACIONAL)` (ej. `[T0] (=, a, 1/2)`).
+- **Acción:** Registra la variable y genera el terceto de asignación inicial `(=, ID, LIT_RACIONAL)` (ej. `[T0] (=, a, 1/2)`).
 
 
 
@@ -92,12 +92,12 @@ Para interpretar las acciones semánticas de cada producción, se utilizan los s
 - **Acción:** No genera ningún terceto. Según el token reconocido, obtiene el símbolo correspondiente (>, <, >=, <=, ==, !=) y lo guarda en $$. De esta manera, la siguiente regla puede utilizar ese símbolo para generar el terceto de comparación.
 
 - **Comparaciones (`comparacion: expresion operador_comparacion expresion`):**
-  - **Acción:** Genera el terceto de comparación `crear_terceto($2, $1, $3)` (ej. `[T3] (>, a, 5/1)`) y propaga su referencia `"[T3]"` en `$$`.
+- **Acción:** Genera el terceto de comparación `crear_terceto($2, $1, $3)` (ej. `[T3] (>, a, 5/1)`) y propaga su referencia `"[T3]"` en `$$`.
 
 #### 4.4 Asignaciones
 
 - **Regla (`asignacion: ID OP_ASIG expresion PUNTO_COMA`):**
-  - **Acción:** Verifica que la variable destino esté declarada con (verificar_variable($1)) y genera el terceto de asignación crear_terceto("=", $1, $3), donde $1 es la variable destino y $3 es el valor de la expresión (ej. [T4] (=, x, [T2]))..
+- **Acción:** Verifica que la variable destino esté declarada con (verificar_variable($1)) y genera el terceto de asignación crear_terceto("=", $1, $3), donde $1 es la variable destino y $3 es el valor de     la expresión (ej. [T4] (=, x, [T2]))..
 
 #### 4.5 Operadores Lógicos (`and` / `or`)
 
