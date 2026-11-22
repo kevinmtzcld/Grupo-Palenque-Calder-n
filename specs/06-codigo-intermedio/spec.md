@@ -75,7 +75,7 @@ Aquí tenés la especificación completa de generación de código intermedio ad
 - **Operador de comparación (`operador_comparacion: COMP_MAYOR | COMP_MENOR | COMP_MAYOR_IGUAL | COMP_MENOR_IGUAL | COMP_IGUAL | COMP_DISTINTO`):** No genera tercetos.
 - **Acción:** Convierte el token relacional en su cadena simbólica (`">"`, `"<"`, `">="`, `"<="`, `"=="`, `"!="`) y la guarda en `$$`.
 - **Comparaciones (`comparacion: expresion operador_comparacion expresion`):**
-  - **Acción:** Genera el terceto relacional `crear_terceto($2, $1, $3)` (ej. `[T3] (>, a, 5/1)`) y propaga su referencia `"[T3]"` en `$$`.
+  - **Acción:** Genera el terceto de comparación `crear_terceto($2, $1, $3)` (ej. `[T3] (>, a, 5/1)`) y propaga su referencia `"[T3]"` en `$$`.
 
 #### 4.4 Asignaciones
 
