@@ -7,7 +7,7 @@
 
 ## TP asignado
 
-_(número de trabajo práctico / variante asignada por la cátedra)_
+_GRUPO C_
 
 ## Lenguaje
 
