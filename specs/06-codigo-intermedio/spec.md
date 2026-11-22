@@ -68,7 +68,7 @@ Aquí tenés la especificación completa de generación de código intermedio ad
   - **Acción:** Registra la variable y genera el terceto de asignación inicial `(=, ID, LIT_RACIONAL)` (ej. `[T0] (=, a, 1/2)`).
 
 
-#### 4.3 Expresiones Aritméticas y Relacionales
+#### 4.3 Expresiones Aritméticas y Comparaciones
 
 - **Operaciones aritméticas (`expresion: expresion OP_SUMA termino | expresion OP_RESTA termino` y `termino: termino OP_MULT factor | termino OP_DIV factor`):**
   - **Acción:** Toma los operandos propagados desde `$1` y `$3`, genera el terceto correspondiente con los operadores `+`, `-`, `*` o `/` mediante `crear_terceto(op, $1, $3)` (ej. `[T2] (+, a, 3/4)`) y guarda la referencia `"[T2]"` en `$$` (`sprintf($$, "[T%d]", pos)`).
