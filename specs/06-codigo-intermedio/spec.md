@@ -158,7 +158,7 @@ En este lenguaje las funciones no reciben parámetros y el bloque `principal()` 
  
 
 - **Llamado como sentencia (`llamada_funcion: ID PAR_IZQ PAR_DER PUNTO_COMA`):**
-  - **Acción:**Obtiene el nombre de la función mediante $1 (que representa ID), verifica que no sea una llamada recursiva ($1 != funcion_actual) y genera crear_terceto("CALL", $1, "-").
+  - **Acción:** Obtiene el nombre de la función mediante $1 (que representa ID), verifica que no sea una llamada recursiva ($1 != funcion_actual) y genera crear_terceto("CALL", $1, "-").
  
 
 - **Llamado dentro de una expresión (`factor: ID PAR_IZQ PAR_DER`):**
