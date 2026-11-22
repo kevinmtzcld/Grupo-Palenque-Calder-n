@@ -49,6 +49,13 @@ Aquí tenés la especificación completa de generación de código intermedio ad
 
 **Propagación de Valores y Uso de Marcadores:** Como Bison (`sintactico-en-c.c`) ejecuta las acciones semánticas al reducir cada producción, los lexemas de identificadores, literales y referencias a tercetos generados (`[Tn]`) se transportan hacia arriba mediante el campo `str_val[50]` definido en `%union` (`strcpy($$, $1)` o `sprintf($$, "[T%d]", pos)`). Para las estructuras de control que requieren emitir saltos tempranos o guardar posiciones antes de reducir el bloque (`si`, `sino`, `mientras`), se utilizan reglas intermedias (`marca_si`, `inicio_mientras`, `condicion_mientras`) y acciones embebidas que apilan y desapilan índices en `pila_saltos` (*backpatching*).
 
+
+### Convención de Variables Semánticas de Bison ($$, $1, $2, ...): Para interpretar las acciones semánticas de cada producción, se utilizan los siguientes marcadores:
+
+$$: Representa el valor semántico del símbolo no terminal ubicado a la izquierda de la producción. Se utiliza para almacenar el resultado y propagarlo hacia las reglas gramaticales superiores.
+
+$1, $2, $3, ...: Representan los valores semánticos de los símbolos ubicados a la derecha de la producción. El número indica la posición que ocupa cada símbolo, contando de izquierda a derecha.
+
 #### 4.1 Operandos simples y Reglas intermedias
 
 - **Operandos (`factor: LIT_RACIONAL | ID`):** No generan tercetos.
