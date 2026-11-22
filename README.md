@@ -14,13 +14,15 @@ _GRUPO C_
 - **Arquitectura destino:** Ensamblador NASM x86-64 para Windows (`win64`), enlazado con GCC a ejecutable nativo (`.exe`)
 
 ## Cómo compilar
+Ingresar a la carpeta `src/` y ejecutar:
 
 ```bash
-bison -d sintactico.y -o sintactico-en-c.c
-gcc sintactico-en-c.c generador_asm.c -o compilador.exe
+bison -d sintactico.y
+gcc -o compilador.exe sintactico.tab.c alexico.c generador_asm.c
 ```
 
 ## Cómo ejecutar
+Ubicar el archivo de entrada (ejemplo.raz) en el mismo directorio que compilador.exe y ejecutar:
 
 ```bash
 ./compilador.exe
