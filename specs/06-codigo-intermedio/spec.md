@@ -162,8 +162,7 @@ En este lenguaje las funciones no reciben parámetros y el bloque `principal()` 
  
 
 - **Llamado dentro de una expresión (`factor: ID PAR_IZQ PAR_DER`):**
-  - **Acción:** Verifica que no haya recursividad ($1 != funcion_actual), genera el terceto crear_terceto("CALL", $1, "-") y guarda su referencia en $$ para utilizar el valor devuelto por la función en una operación.
-
+  - **Acción:** Verifica que no haya recursividad (`$1 != funcion_actual`), genera el terceto `crear_terceto("CALL", $1, "-")` y guarda su referencia en `$$` para utilizar el valor devuelto por la función en una operación.
 
 
 
