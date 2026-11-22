@@ -66,8 +66,7 @@ Aquí tenés la especificación completa de generación de código intermedio ad
 - **Acción:** Registra el identificador en la tabla de variables declaradas (`registrar_variable($1)`).
 - **Declaración con inicialización positiva (`variable: ID OP_ASIG LIT_RACIONAL`):**
   - **Acción:** Registra la variable y genera el terceto de asignación inicial `(=, ID, LIT_RACIONAL)` (ej. `[T0] (=, a, 1/2)`).
-- **Declaración con inicialización negativa (`variable: ID OP_ASIG OP_RESTA LIT_RACIONAL`):**
-  - **Acción:** Registra la variable, concatena el signo negativo con el literal (`-$4`) y genera el terceto `(=, ID, -LIT_RACIONAL)` (ej. `[T1] (=, b, -2/1)`).
+
 
 #### 4.3 Expresiones Aritméticas y Relacionales
 
