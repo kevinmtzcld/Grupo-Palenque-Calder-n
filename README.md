@@ -9,8 +9,8 @@ _GRUPO C_
 
 ## Lenguaje
 
-- **Lenguaje fuente:** Razio (`.raz`), lenguaje imperativo tipado basado exclusivamente en números racionales (`numerador/denominador`).
-- **Lenguaje de implementación:** C y Bison (analizador léxico manual en C, parser LALR(1) en Bison y generador de código intermedio/objeto en C)[cite: 1].
+- **Lenguaje fuente:** Razio (.raz), un lenguaje de programación imperativo y tipado que trabaja exclusivamente con números racionales (numerador/denominador).
+- **Lenguaje de implementación:** C y Bison. El analizador léxico está desarrollado en C, el analizador sintáctico utiliza Bison (LALR(1)) y el generador de código está implementado en C.
 - **Arquitectura destino:** Ensamblador NASM x86-64 para Windows (`win64`), enlazado con GCC a ejecutable nativo (`.exe`)[cite: 1].
 
 ## Cómo compilar
