@@ -47,7 +47,9 @@ Aquí tenés la especificación completa de generación de código intermedio ad
 
 ### 4. Estructura de Tercetos por Regla Gramatical (Lenguaje Razio)
 
-**Propagación de Valores y Uso de Marcadores:** Como Bison (`sintactico-en-c.c`) ejecuta las acciones semánticas al reducir cada producción, los lexemas de identificadores, literales y referencias a tercetos generados (`[Tn]`) se transportan hacia arriba mediante el campo `str_val[50]` definido en `%union` (`strcpy($$, $1)` o `sprintf($$, "[T%d]", pos)`). Para las estructuras de control que requieren emitir saltos tempranos o guardar posiciones antes de reducir el bloque (`si`, `sino`, `mientras`), se utilizan reglas intermedias (`marca_si`, `inicio_mientras`, `condicion_mientras`) y acciones embebidas que apilan y desapilan índices en `pila_saltos` (*backpatching*).
+**Propagación de Valores y Uso de Marcadores:** En Bison, cada símbolo de la gramática transporta una cadena de texto (`str_val[50]`, definida en `%union`) para pasar información desde las hojas hacia la raíz del árbol sintáctico. De este modo, las reglas propagan hacia arriba tanto los lexemas de variables y literales (`strcpy($$, $1)`) como las referencias a los tercetos recién creados (`sprintf($$, "[T%d]", pos)`).
+
+Como Bison ejecuta una acción semántica recién cuando termina de leer toda una regla, en las estructuras de control (`si`, `sino`, `mientras`) se intercalan reglas auxiliares (`marca_si`, `inicio_mientras`, `condicion_mientras`) y acciones intermedias. Esto permite generar los saltos (`BF`, `BI`) antes de procesar sus bloques y guardar sus índices en `pila_saltos` para completar las direcciones de destino una vez que se conoce dónde termina cada bloque (*backpatching*).
 
 **Convención de Variables Semánticas de Bison (`$$`, `$1`, `$2`, ...)**
 
@@ -63,36 +65,43 @@ Para interpretar las acciones semánticas de cada producción, se utilizan los s
 - **Acción:**
   - Si es un literal racional (`LIT_RACIONAL`), se copia su representación textual (`$1`, ej. `"3/4"`) hacia el símbolo no terminal `factor` mediante `strcpy($$, $1)`.
   - Si es un identificador (`ID`), se valida mediante `verificar_variable($1)` que haya sido declarado previamente y se propaga su nombre hacia arriba (`strcpy($$, $1)`).
+
 - **Reglas intermedias (`termino: factor`, `expresion: termino`, `condicion: cond_or`, `cond_or: cond_and`, `cond_and: cond_factor`, `cond_factor: comparacion`):** No generan tercetos ni alteran la pila de saltos.
 - **Acción:** Únicamente propagan hacia arriba el lexema o la referencia al terceto ya creado (`strcpy($$, $1)`).
+
 - **Agrupación con paréntesis (`factor: PAR_IZQ expresion PAR_DER`, `cond_factor: PAR_IZQ condicion PAR_DER`):** No generan tercetos.
 - **Acción:** Descartan los paréntesis propagando directamente la referencia interna (`strcpy($$, $2)`).
+
 
 ##### 4.2 Declaración e Inicialización de Variables
 
 - **Declaración simple (`variable: ID`):** No genera tercetos.
 - **Acción:** Registra el identificador en la tabla de variables declaradas (`registrar_variable($1)`).
+
 - **Declaración con inicialización positiva (`variable: ID OP_ASIG LIT_RACIONAL`):**
   - **Acción:** Registra la variable y genera el terceto de asignación inicial `(=, ID, LIT_RACIONAL)` (ej. `[T0] (=, a, 1/2)`).
+
 
 
 #### 4.3 Expresiones Aritméticas y Comparaciones
 
 - **Operaciones aritméticas (`expresion: expresion OP_SUMA termino | expresion OP_RESTA termino` y `termino: termino OP_MULT factor | termino OP_DIV factor`):**
-  - **Acción:** Toma los operandos propagados desde `$1` y `$3`, genera el terceto correspondiente con los operadores `+`, `-`, `*` o `/` mediante `crear_terceto(op, $1, $3)` (ej. `[T2] (+, a, 3/4)`) y guarda la referencia `"[T2]"` en `$$` (`sprintf($$, "[T%d]", pos)`).
-- **Operador de comparación (`operador_comparacion: COMP_MAYOR | COMP_MENOR | COMP_MAYOR_IGUAL | COMP_MENOR_IGUAL | COMP_IGUAL | COMP_DISTINTO`):** No genera tercetos.
-- **Acción:** Convierte el token relacional en su cadena simbólica (`">"`, `"<"`, `">="`, `"<="`, `"=="`, `"!="`) y la guarda en `$$`.
+  - **Acción:** Toma los dos operandos de la operación: $1 contiene el operando izquierdo y $3 el operando derecho. Según el operador reconocido (+, -, * o /), genera el terceto correspondiente mediante crear_terceto(op, $1, $3) (ej. [T2] (+, a, 3/4)). Luego, guarda la referencia al terceto generado ([T2]) en $$, para que pueda utilizarse en operaciones posteriores.
+  
+- **Operador de comparación (`operador_comparacion: COMP_MAYOR | COMP_MENOR | COMP_MAYOR_IGUAL | COMP_MENOR_IGUAL | COMP_IGUAL | COMP_DISTINTO`):** 
+- **Acción:** No genera ningún terceto. Según el token reconocido, obtiene el símbolo correspondiente (>, <, >=, <=, ==, !=) y lo guarda en $$. De esta manera, la siguiente regla puede utilizar ese símbolo para generar el terceto de comparación.
+
 - **Comparaciones (`comparacion: expresion operador_comparacion expresion`):**
   - **Acción:** Genera el terceto de comparación `crear_terceto($2, $1, $3)` (ej. `[T3] (>, a, 5/1)`) y propaga su referencia `"[T3]"` en `$$`.
 
 #### 4.4 Asignaciones
 
 - **Regla (`asignacion: ID OP_ASIG expresion PUNTO_COMA`):**
-  - **Acción:** Verifica que la variable destino exista (`verificar_variable($1)`) y genera el terceto de asignación utilizando la referencia propagada en `$3`: `crear_terceto("=", $1, $3)` (ej. `[T4] (=, x, [T2])`).
+  - **Acción:** Verifica que la variable destino esté declarada con (verificar_variable($1)) y genera el terceto de asignación crear_terceto("=", $1, $3), donde $1 es la variable destino y $3 es el valor de la expresión (ej. [T4] (=, x, [T2]))..
 
 #### 4.5 Operadores Lógicos (`and` / `or`)
 
-El compilador implementa **evaluación lógica completa** (sin cortocircuito), resolviendo cada subcondición a un valor booleano temporal (`[Tn]`) antes de emitir el salto condicional.
+El compilador evalúa todas las partes de una condición lógica antes de decidir si debe realizar un salto. Guarda el resultado de cada comparación en un terceto ([Tn]) y luego los combina mediante AND u OR.
 
 - **Operador lógico AND (`cond_and: cond_and OP_AND cond_factor`):**
   - **Acción:** Toma las referencias booleanas de ambos operandos (`$1` y `$3`), genera el terceto lógico `crear_terceto("AND", $1, $3)` (ej. `[T5] (AND, [T3], [T4])`) y propaga su referencia `"[T5]"` en `$$`.
@@ -104,7 +113,7 @@ El compilador implementa **evaluación lógica completa** (sin cortocircuito), r
 - **Al reducir la condición (`marca_si: PR_SI PAR_IZQ condicion PAR_DER`):**
   - **Acción:** Genera el terceto de Bifurcación por Falso con destino pendiente: `crear_terceto("BF", $3, "?")` y apila su índice (`pos_bf`) en `pila_saltos` mediante `apilar(pos_bf)`.
 - **Caso `si` simple (`si: marca_si bloque`):**
-  - **Acción:** Al finalizar el bloque verdadero, desapila `pos_bf` de `pila_saltos` y completa su segundo operando con la dirección del próximo terceto a generar (`modificar_terceto(pos_bf, "[T_fin]")`).
+  - **Acción:** Al finalizar el bloque, desapila `pos_bf` de `pila_saltos` y completa su segundo operando con la dirección del próximo terceto a generar (`modificar_terceto(pos_bf, "[T_fin]")`).
 - **Caso `si` con `sino` (`si: marca_si bloque PR_SINO {A1} bloque {A2}`):**
   - **En `{A1}` (al finalizar el bloque `si`, antes de entrar al `sino`):**
     1. Desapila `pos_bf` de `pila_saltos`.
@@ -121,9 +130,9 @@ El compilador implementa **evaluación lógica completa** (sin cortocircuito), r
   - **Acción:** Genera el terceto de salida por falso con destino pendiente `crear_terceto("BF", $3, "?")` y apila su índice (`pos_bf`) en `pila_saltos`.
 - **Al finalizar el bloque del bucle (`mientras: condicion_mientras bloque`):**
   - **Acción:** Desapila dos índices de `pila_saltos`:
-    1. El primer valor desapilado (`pos_bf`) corresponde al salto de salida.
+    1. El primer valor desapilado (`pos_bf`) corresponde al terceto bf incompleto.
     2. El segundo valor desapilado (`pos_inicio`) corresponde al comienzo de la condición. Con él se genera el salto incondicional de retorno: `crear_terceto("BI", "[T_inicio]", "-")`.
-    3. Finalmente, se completa el destino pendiente de `pos_bf` con el índice del terceto siguiente al `BI` (`modificar_terceto(pos_bf, "[T_fin]")`).
+    3. Al final se completa el destino pendiente de `pos_bf` con el índice del terceto siguiente al `BI` (`modificar_terceto(pos_bf, "[T_fin]")`).
 
 #### 4.8 Sentencias de Salida y Retorno (`mostrar` / `retornar`)
 
@@ -136,19 +145,24 @@ El compilador implementa **evaluación lógica completa** (sin cortocircuito), r
 
 #### 4.9 Estructura del Programa, Declaración y Llamado de Funciones
 
-En **Razio**, las funciones no reciben parámetros y el bloque `principal()` constituye el punto de entrada obligatorio del programa.
+En este lenguaje las funciones no reciben parámetros y el bloque `principal()` constituye el punto de entrada obligatorio del programa.
 
 - **Inicio del programa y bloque `principal` (`programa: declaraciones {A1} funciones PR_PRINCIPAL PAR_IZQ PAR_DER {A2} bloque`):**
   - **En `{A1}` (tras las declaraciones globales):** Genera `crear_terceto("IR_PRINCIPAL", "-", "-")` para saltar por encima de las definiciones de funciones auxiliares.
-  - **En `{A2}` (al abrir `principal()`):** Fija `funcion_actual = "principal"` y genera la etiqueta de entrada `crear_terceto("PRINCIPAL", "-", "-")`.
-- **Definición de función (`funcion: PR_DEF ID PAR_IZQ PAR_DER {A1} bloque {A2}`):**
-  - **En `{A1}`:** Fija `funcion_actual = $2` y genera la marca de inicio `crear_terceto("FUNC_INICIO", $2, "-")`.
-  - **En `{A2}`:** Genera la marca de cierre `crear_terceto("FUNC_FIN", $2, "-")` y limpia `funcion_actual`.
-- **Llamado como sentencia (`llamada_funcion: ID PAR_IZQ PAR_DER PUNTO_COMA`):**
-  - **Acción:** Verifica que la función no se llame recursivamente (`$1 != funcion_actual`) y genera `crear_terceto("CALL", $1, "-")`.
-- **Llamado dentro de una expresión (`factor: ID PAR_IZQ PAR_DER`):**
-  - **Acción:** Verifica no recursividad, genera `pos = crear_terceto("CALL", $1, "-")` y propaga su referencia `"[T%d]"` en `$$` para que su valor de retorno sea operado en la expresión.
+  - **En `{A2}` (al abrir `principal()`):** Establece funcion_actual = "principal" y genera la marca de entrada mediante crear_terceto("PRINCIPAL", "-", "-").
+ 
 
+- **Definición de función (`funcion: PR_DEF ID PAR_IZQ PAR_DER {A1} bloque {A2}`):**
+  - **En `{A1}`:** Obtiene el nombre de la función mediante $2 (que representa el identificador ID), lo guarda en funcion_actual y genera la marca de inicio crear_terceto("FUNC_INICIO", $2, "-").
+  - **En `{A2}`:** Genera la marca de cierre crear_terceto("FUNC_FIN", $2, "-"), utilizando nuevamente $2 para identificar la función, y restablece funcion_actual = "".
+ 
+
+- **Llamado como sentencia (`llamada_funcion: ID PAR_IZQ PAR_DER PUNTO_COMA`):**
+  - **Acción:**Obtiene el nombre de la función mediante $1 (que representa ID), verifica que no sea una llamada recursiva ($1 != funcion_actual) y genera crear_terceto("CALL", $1, "-").
+ 
+
+- **Llamado dentro de una expresión (`factor: ID PAR_IZQ PAR_DER`):**
+  - **Acción:** Verifica que no haya recursividad ($1 != funcion_actual), genera el terceto crear_terceto("CALL", $1, "-") y guarda su referencia en $$ para utilizar el valor devuelto por la función en una operación.
 
 
 
