@@ -1,0 +1,45 @@
+Ejemplos correctos:
+
+1)**********************suma 5/6 r.final 1/2
+
+
+
+racional a = 1/2, b = 1/3, c = 3/5, res = 0/1;
+
+principal() {
+    res = a + b;
+    mostrar("Suma: ", res);
+    res = res * c;
+    mostrar("Resultado final: ", res);
+}
+
+
+
+2)**********************resultado desaprobado 3,5<4
+
+
+
+racional nota = 7/2, minimo = 4/1;
+
+principal() {
+    si (nota >= minimo) {
+        mostrar("Aprobado con: ", nota);
+    } sino {
+        mostrar("Desaprobado con: ", nota);
+    }
+}
+
+
+
+
+
+3)********************imprime: 1/2, 1/1, 3/2 y 2/1
+
+racional cont = 0/1, tope = 2/1;
+
+principal() {
+    mientras (cont < tope) {
+        cont = cont + 1/2;
+        mostrar("Valor actual: ", cont);
+    }
+}
