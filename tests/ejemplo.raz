@@ -1,111 +1,23 @@
-1.EJEMPLO VALIDO:
+/* IMPRIME:: 
+Promedio:
+7/1
+El alumno aprueba*/
 
 
-racional precioBase = 100/1, descuento = 1/5, precioFinal = 0/1;
+racional notauno = 6/1, notados = 8/1, promedio, asistencia = 4/5;
 
-def calcularDescuento()
-{
-    precioFinal = precioBase - (precioBase * descuento);
-    retornar (precioFinal);
+def calcularpromedio() {
+    promedio = (notauno + notados) / 2/1;
+    retornar(promedio);
 }
 
-principal()
-{
-    mostrar("=== SISTEMA DE CALCULO DE PRECIOS ===");
+principal() {
+    promedio = calcularpromedio();
+    mostrar("Promedio:", promedio);
 
-    calcularDescuento();
-    mostrar("Precio final calculado:", precioFinal);
-
-    si ((precioFinal >= 50/1) and (descuento != 0/1))
-    {
-        mostrar("El precio final sigue siendo mayor al limite");
+    si (promedio >= 4/1 and asistencia >= 3/4) {
+        mostrar("El alumno aprueba");
+    } sino {
+        mostrar("El alumno desaprueba");
     }
-    sino
-    {
-        mostrar("El precio final es una oferta accesible");
-    }
-
-    mostrar("Proceso finalizado con exito");
-}
-
-
-
-
-
-
-
-
-
-2. prueba_errores_lexicos.raz (Prueba de Errores y Recuperación)
-
-
-
-racional x = 1/2, y = 3/4;
-racional errorOverflow = 99999999999/1;  /* ERROR 1: Overflow 32 bits */
-
-def probar()
-{
-    x = x + 1/2;
-    retornar (x);
-}
-
-principal()
-{
-    mostrar("Probando cadena sin cerrar);  /* ERROR 2: Cadena no cerrada */
-
-    x = 5/2 $ 1/2;                       /* ERROR 3: Caracter no permitido $ */
-
-    si (x >= y)
-    {
-        mostrar("Fin del test de errores");
-    }
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-3. prueba_casos_borde.raz (Casos Límite y Retracción)
-
-
-/* Un solo bloque de declaracion con variables pegadas numeros y multiples espacios */
-racional    precioBase1   =   100/1  ,  descuento20 = 1/5 , flagValido = 0/1 , similarSilla = 10/1 , similarMientras2 = 5/2 ;
-
-def miFuncion1()
-{
-	flagValido=precioBase1+descuento20;
-	retornar(flagValido);
-}
-
-principal()
-{
-	mostrar("  Texto  con   espacios   multiples  ");
-	mostrar("");
-
-	precioBase1=5/2-1/2;
-	similarSilla=(precioBase1*2/1)/descuento20;
-
-	si((precioBase1>=descuento20)and(similarSilla!=0/1))
-	{
-		similarMientras2=similarSilla+1/1;
-	}
-	sino
-	{
-		mientras((flagValido<3/1)or(precioBase1<similarSilla))
-		{
-			flagValido=flagValido+1/1;
-		}
-	}
-
-	miFuncion1();
-	mostrar("Prueba de casos borde finalizada");
 }
