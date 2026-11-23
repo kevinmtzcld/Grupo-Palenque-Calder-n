@@ -62,40 +62,35 @@ Para interpretar las acciones semánticas de cada producción, se utilizan los s
 - **`$$`:** Representa el valor semántico del símbolo no terminal ubicado a la izquierda de la producción. Se utiliza para almacenar el resultado y propagarlo hacia las reglas gramaticales superiores.
 - **`$1`, `$2`, `$3`, ...:** Representan los valores semánticos de los símbolos ubicados a la derecha de la producción. El número indica la posición que ocupa cada símbolo, contando de izquierda a derecha.
 
-
 #### 4.1 Operandos simples y Reglas intermedias
 
 - **Operandos (`factor: LIT_RACIONAL | ID`):** No generan tercetos.
-- **Acción:**
-  - Si es un literal racional (`LIT_RACIONAL`), se copia su representación textual (`$1`, ej. `"3/4"`) hacia el símbolo no terminal `factor` mediante `strcpy($$, $1)`.
-  - Si es un identificador (`ID`), se valida mediante `verificar_variable($1)` que haya sido declarado previamente y se propaga su nombre hacia arriba (`strcpy($$, $1)`).
+  - **Acción:** Si es un literal racional (`LIT_RACIONAL`), se copia su representación textual (`$1`, ej. `"3/4"`) hacia el símbolo no terminal `factor` mediante `strcpy($$, $1)`.
+  - **Acción:** Si es un identificador (`ID`), se valida mediante `verificar_variable($1)` que haya sido declarado previamente y se propaga su nombre hacia arriba (`strcpy($$, $1)`).
 
 - **Reglas intermedias:**
-- **Aritméticas (termino: factor, expresion: termino):** No generan tercetos. Propagan hacia arriba el lexema o la referencia al terceto creado mediante strcpy($$, $1).
-- **Lógicas (condicion: cond_or, cond_or: cond_and, cond_and: cond_factor, cond_factor: comparacion):** No generan tercetos. Propagan hacia arriba la estructura CondAttr, que contiene las listas truelist y        falselist, mediante $$ = $1.
+  - **Aritméticas (`termino: factor`, `expresion: termino`):** No generan tercetos. Propagan hacia arriba el lexema o la referencia al terceto creado mediante `strcpy($$, $1)`.
+  - **Lógicas (`condicion: cond_or`, `cond_or: cond_and`, `cond_and: cond_factor`, `cond_factor: comparacion`):** No generan tercetos. Propagan hacia arriba la estructura `CondAttr`, que contiene las listas `truelist` y `falselist`, mediante `$$ = $1`.
 
 - **Agrupación con paréntesis:**
-- **Aritmética (factor:** PAR_IZQ expresion PAR_DER): Descarta los paréntesis y propaga la referencia interna mediante strcpy($$, $2).
-- **Lógica (cond_factor:** PAR_IZQ condicion PAR_DER): Descarta los paréntesis y propaga las listas truelist y falselist de la condición interna mediante $$ = $2.
+  - **Aritmética (`factor: PAR_IZQ expresion PAR_DER`):** Descarta los paréntesis y propaga la referencia interna mediante `strcpy($$, $2)`.
+  - **Lógica (`cond_factor: PAR_IZQ condicion PAR_DER`):** Descarta los paréntesis y propaga las listas `truelist` y `falselist` de la condición interna mediante `$$ = $2`.
 
-
-##### 4.2 Declaración e Inicialización de Variables
+#### 4.2 Declaración e Inicialización de Variables
 
 - **Declaración simple (`variable: ID`):** No genera tercetos.
-- **Acción:** Registra el identificador en la tabla de variables declaradas (`registrar_variable($1)`).
+  - **Acción:** Registra el identificador en la tabla de variables declaradas (`registrar_variable($1)`).
 
 - **Declaración con inicialización positiva (`variable: ID OP_ASIG LIT_RACIONAL`):**
-- **Acción:** Registra la variable y genera el terceto de asignación inicial `(=, ID, LIT_RACIONAL)` (ej. `[T0] (=, a, 1/2)`).
-
-
+  - **Acción:** Registra la variable y genera el terceto de asignación inicial `(=, ID, LIT_RACIONAL)` (ej. `[T0] (=, a, 1/2)`).
 
 #### 4.3 Expresiones Aritméticas y Comparaciones
 
 - **Operaciones aritméticas (`expresion: expresion OP_SUMA termino | expresion OP_RESTA termino` y `termino: termino OP_MULT factor | termino OP_DIV factor`):**
   - **Acción:** Toma los dos operandos de la operación: `$1` contiene el operando izquierdo y `$3` el operando derecho. Según el operador reconocido (`+`, `-`, `*` o `/`), genera el terceto correspondiente mediante `crear_terceto(op, $1, $3)` (ej. `[T2] (+, a, 3/4)`). Luego, guarda la referencia al terceto generado (`[T2]`) en `$$`, para que pueda utilizarse en operaciones posteriores.
-  
-- **Operador de comparación (`operador_comparacion: COMP_MAYOR | COMP_MENOR | COMP_MAYOR_IGUAL | COMP_MENOR_IGUAL | COMP_IGUAL | COMP_DISTINTO`):** 
-- **Acción:** No genera ningún terceto. Según el token reconocido, obtiene el símbolo correspondiente (>, <, >=, <=, ==, !=) y lo guarda en $$. De esta manera, la siguiente regla puede utilizar ese símbolo para generar el terceto de comparación.
+
+- **Operador de comparación (`operador_comparacion: COMP_MAYOR | COMP_MENOR | COMP_MAYOR_IGUAL | COMP_MENOR_IGUAL | COMP_IGUAL | COMP_DISTINTO`):**
+  - **Acción:** No genera ningún terceto. Según el token reconocido, obtiene el símbolo correspondiente (`>`, `<`, `>=`, `<=`, `==`, `!=`) y lo guarda en `$$`. De esta manera, la siguiente regla puede utilizar ese símbolo para generar el terceto de comparación.
 
 - **Comparaciones (`comparacion: expresion operador_comparacion expresion`):**
   - **Acción:** Genera el terceto de comparación `pos_comp = crear_terceto($2, $1, $3)` (ej. `[T0] (>, x, 5/1)`). Luego, genera un salto condicional por falso `pos_bf = crear_terceto("BF", "[T0]", "?")`, cuyo destino queda pendiente. Finalmente, inicializa `$$.truelist` vacía y guarda `pos_bf` en `$$.falselist` para completar el destino del salto cuando se conozca.
@@ -103,14 +98,14 @@ Para interpretar las acciones semánticas de cada producción, se utilizan los s
 #### 4.4 Asignaciones
 
 - **Regla (`asignacion: ID OP_ASIG expresion PUNTO_COMA`):**
-- **Acción:** Verifica que la variable destino esté declarada con (verificar_variable($1)) y genera el terceto de asignación crear_terceto("=", $1, $3), donde $1 es la variable destino y $3 es el valor de     la expresión (ej. [T4] (=, x, [T2]))..
+  - **Acción:** Verifica que la variable destino esté declarada con `verificar_variable($1)` y genera el terceto de asignación `crear_terceto("=", $1, $3)`, donde `$1` es la variable destino y `$3` es el valor de la expresión (ej. `[T4] (=, x, [T2])`).
 
-
-### 4.5 Operadores Lógicos (`and` / `or`) con Cortocircuito
+#### 4.5 Operadores Lógicos (`and` / `or`) con Cortocircuito
 
 El compilador no genera tercetos booleanos intermedios (`AND`/`OR`), sino que resuelve la evaluación lógica mediante cortocircuito y *backpatching* sobre las listas `truelist` y `falselist`:
 
-- **Marcador de posición (`M: /* vacio */`):** Guarda en `$$` el índice del próximo terceto a generarse (`$$ = indice_terceto`). Marca el punto de entrada de la segunda subcondición.
+- **Marcador de posición (`M: /* vacio */`):**
+  - **Acción:** Guarda en `$$` el índice del próximo terceto a generarse (`$$ = indice_terceto`). Marca el punto de entrada de la segunda subcondición.
 
 - **Operador lógico AND (`cond_and: cond_and OP_AND M cond_factor`):**
   - **Acción:** Si el operando izquierdo (`$1`) es falso, su salto en `falselist` ya apunta al destino final, por lo que no se evalúa el operando derecho (`$4`). Si es verdadero, se completa `$1.truelist` apuntando al marcador `M` (`backpatch($1.truelist, $3)`) para continuar con la evaluación de `$4`. Finalmente, la regla propaga `$$.truelist = $4.truelist` y combina ambas listas falsas: `$$.falselist = combinar_listas($1.falselist, $4.falselist)`.
@@ -119,11 +114,7 @@ El compilador no genera tercetos booleanos intermedios (`AND`/`OR`), sino que re
   - **Acción en `{A1}`:** Convierte el último salto `BF` del operando izquierdo (`$1`) en un salto por verdadero `BV` y lo mueve de `$1.falselist` a `$1.truelist`. De esta manera, si la primera condición es verdadera, salta directamente al destino verdadero sin evaluar la segunda.
   - **Acción al reducir la regla completa:** Completa `$1.falselist` apuntando al marcador `M` (`backpatch($1.falselist, $4)`) para evaluar `$5` únicamente cuando `$1` haya resultado falso. Finalmente, propaga `$$.truelist = combinar_listas($1.truelist, $5.truelist)` y `$$.falselist = $5.falselist`.
 
-
-
-
-
-### 4.6 Estructura Condicional `si` / `sino`
+#### 4.6 Estructura Condicional `si` / `sino`
 
 - **Al reducir la condición (`marca_si: PR_SI PAR_IZQ condicion PAR_DER`):**
   - **Acción:** Completa todos los saltos verdaderos pendientes (`$3.truelist`) con el índice de inicio del bloque `si` (`backpatch($3.truelist, indice_terceto)`) y apila la estructura `CondAttr` en `pila_condiciones` (`apilar_cond($3)`) para conservar su `falselist`.
@@ -140,9 +131,7 @@ El compilador no genera tercetos booleanos intermedios (`AND`/`OR`), sino que re
   - **En `{A2}` (al finalizar el bloque `sino`):**
     1. Desapila `pos_bi` de `pila_saltos` y completa su primer operando (`modificar_terceto_op1(pos_bi, "[T_fin]")`) para continuar la ejecución fuera de la estructura.
 
-
-   
-### 4.7 Estructura Iterativa `mientras`
+#### 4.7 Estructura Iterativa `mientras`
 
 - **Al iniciar el bucle (`inicio_mientras: PR_MIENTRAS`):**
   - **Acción:** Guarda en `pila_saltos` el índice del próximo terceto a generar (`apilar(indice_terceto)`), marcando el punto exacto donde comienza a evaluarse la condición.
@@ -155,15 +144,14 @@ El compilador no genera tercetos booleanos intermedios (`AND`/`OR`), sino que re
     1. Desapila `c` de `pila_condiciones` y `pos_inicio` de `pila_saltos`.
     2. Genera el salto incondicional de retorno al comienzo de la condición: `crear_terceto("BI", "[T_inicio]", "-")`.
     3. Completa todos los saltos de `c.falselist` con el índice del terceto siguiente al `BI` para salir del bucle (`backpatch(c.falselist, indice_terceto)`).
-   
 
-  
 #### 4.8 Sentencias de Salida y Retorno (`mostrar` / `retornar`)
 
 - **Sentencia `mostrar` (`argumentos_mostrar` / `lista_ids_mostrar`):**
   - **Variante Cadena (`argumentos_mostrar: LIT_CADENA`):** Genera `crear_terceto("MOSTRAR_STR", $1, "-")`.
   - **Variante Variable (`argumentos_mostrar: ID` / `lista_ids_mostrar: ID | lista_ids_mostrar COMA ID`):** Verifica que la variable esté declarada y genera `crear_terceto("MOSTRAR_ID", ID, "-")`.
   - **Variante Mixta (`argumentos_mostrar: LIT_CADENA {A1} COMA lista_ids_mostrar`):** En `{A1}` emite primero `crear_terceto("MOSTRAR_STR", $1, "-")` y luego cada identificador de `lista_ids_mostrar` emite su propio terceto `MOSTRAR_ID` en orden de aparición.
+
 - **Sentencia `retornar` (`retornar: PR_RETORNAR PAR_IZQ valor_retorno PAR_DER PUNTO_COMA`):**
   - **Acción:** La regla auxiliar `valor_retorno` (`ID | LIT_RACIONAL`) propaga el valor en `$$`, y `retornar` genera `crear_terceto("RETORNAR", $3, "-")`.
 
@@ -173,22 +161,17 @@ En este lenguaje las funciones no reciben parámetros y el bloque `principal()` 
 
 - **Inicio del programa y bloque `principal` (`programa: declaraciones {A1} funciones PR_PRINCIPAL PAR_IZQ PAR_DER {A2} bloque`):**
   - **En `{A1}` (tras las declaraciones globales):** Genera `crear_terceto("IR_PRINCIPAL", "-", "-")` para saltar por encima de las definiciones de funciones auxiliares.
-  - **En `{A2}` (al abrir `principal()`):** Establece funcion_actual = "principal" y genera la marca de entrada mediante crear_terceto("PRINCIPAL", "-", "-").
- 
+  - **En `{A2}` (al abrir `principal()`):** Establece `funcion_actual = "principal"` y genera la marca de entrada mediante `crear_terceto("PRINCIPAL", "-", "-")`.
 
 - **Definición de función (`funcion: PR_DEF ID PAR_IZQ PAR_DER {A1} bloque {A2}`):**
-  - **En `{A1}`:** Obtiene el nombre de la función mediante $2 (que representa el identificador ID), lo guarda en funcion_actual y genera la marca de inicio crear_terceto("FUNC_INICIO", $2, "-").
-  - **En `{A2}`:** Genera la marca de cierre crear_terceto("FUNC_FIN", $2, "-"), utilizando nuevamente $2 para identificar la función, y restablece funcion_actual = "".
- 
+  - **En `{A1}`:** Obtiene el nombre de la función mediante `$2` (que representa el identificador `ID`), lo guarda en `funcion_actual` y genera la marca de inicio `crear_terceto("FUNC_INICIO", $2, "-")`.
+  - **En `{A2}`:** Genera la marca de cierre `crear_terceto("FUNC_FIN", $2, "-")`, utilizando nuevamente `$2` para identificar la función, y restablece `funcion_actual = ""`.
 
 - **Llamado como sentencia (`llamada_funcion: ID PAR_IZQ PAR_DER PUNTO_COMA`):**
-  - **Acción:** Obtiene el nombre de la función mediante $1 (que representa ID), verifica que no sea una llamada recursiva ($1 != funcion_actual) y genera crear_terceto("CALL", $1, "-").
- 
+  - **Acción:** Obtiene el nombre de la función mediante `$1` (que representa `ID`), verifica que no sea una llamada recursiva (`$1 != funcion_actual`) y genera `crear_terceto("CALL", $1, "-")`.
 
 - **Llamado dentro de una expresión (`factor: ID PAR_IZQ PAR_DER`):**
   - **Acción:** Verifica que no haya recursividad (`$1 != funcion_actual`), genera el terceto `crear_terceto("CALL", $1, "-")` y guarda su referencia en `$$` para utilizar el valor devuelto por la función en una operación.
-
-
 
 
 
