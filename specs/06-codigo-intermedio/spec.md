@@ -47,9 +47,13 @@ Aquí tenés la especificación completa de generación de código intermedio ad
 
 ### 4. Estructura de Tercetos por Regla Gramatical (Lenguaje Razio)
 
-**Propagación de Valores y Uso de Marcadores:** En Bison, cada símbolo de la gramática transporta una cadena de texto (`str_val[50]`, definida en `%union`) para pasar información desde las hojas hacia la raíz del árbol sintáctico. De este modo, las reglas propagan hacia arriba tanto los lexemas de variables y literales (`strcpy($$, $1)`) como las referencias a los tercetos recién creados (`sprintf($$, "[T%d]", pos)`).
+**Propagación de Valores y Uso de Marcadores:**
 
-Como Bison ejecuta una acción semántica recién cuando termina de leer toda una regla, en las estructuras de control (`si`, `sino`, `mientras`) se intercalan reglas auxiliares (`marca_si`, `inicio_mientras`, `condicion_mientras`) y acciones intermedias. Esto permite generar los saltos (`BF`, `BI`) antes de procesar sus bloques y guardar sus índices en `pila_saltos` para completar las direcciones de destino una vez que se conoce dónde termina cada bloque (*backpatching*).
+En Bison, los símbolos de las expresiones transportan una cadena de texto (`str_val[50]`, definida en `%union`) para propagar los lexemas (`strcpy($$, $1)`) o las referencias a tercetos aritméticos (`sprintf($$, "[T%d]", pos)`).
+
+Por otro lado, las reglas de condiciones (`condicion`, `cond_or`, `cond_and`, `cond_factor`, `comparacion`) transportan una estructura `CondAttr`, que contiene dos listas de índices de saltos pendientes (`truelist` y `falselist`). Estas listas permiten implementar la evaluación lógica por cortocircuito mediante *backpatching*.
+
+Como Bison ejecuta las acciones semánticas al reducir las producciones, en las estructuras de control (`si`, `sino`, `mientras`) y en las expresiones lógicas (`and`, `or`) se utilizan reglas marcador (`M`, `marca_si`, `inicio_mientras`, `condicion_mientras`) y acciones intermedias. Esto permite guardar posiciones de tercetos durante el análisis, generar los saltos (`BF`, `BV`, `BI`) y completar sus destinos una vez que se conoce a dónde debe dirigirse cada salto.
 
 **Convención de Variables Semánticas de Bison (`$$`, `$1`, `$2`, ...)**
 
@@ -66,11 +70,13 @@ Para interpretar las acciones semánticas de cada producción, se utilizan los s
   - Si es un literal racional (`LIT_RACIONAL`), se copia su representación textual (`$1`, ej. `"3/4"`) hacia el símbolo no terminal `factor` mediante `strcpy($$, $1)`.
   - Si es un identificador (`ID`), se valida mediante `verificar_variable($1)` que haya sido declarado previamente y se propaga su nombre hacia arriba (`strcpy($$, $1)`).
 
-- **Reglas intermedias (`termino: factor`, `expresion: termino`, `condicion: cond_or`, `cond_or: cond_and`, `cond_and: cond_factor`, `cond_factor: comparacion`):** No generan tercetos ni alteran la pila de saltos.
-- **Acción:** Únicamente propagan hacia arriba el lexema o la referencia al terceto ya creado (`strcpy($$, $1)`).
+- **Reglas intermedias:**
+- **Aritméticas (termino: factor, expresion: termino):** No generan tercetos. Propagan hacia arriba el lexema o la referencia al terceto creado mediante strcpy($$, $1).
+- **Lógicas (condicion: cond_or, cond_or: cond_and, cond_and: cond_factor, cond_factor: comparacion):** No generan tercetos. Propagan hacia arriba la estructura CondAttr, que contiene las listas truelist y        falselist, mediante $$ = $1.
 
-- **Agrupación con paréntesis (`factor: PAR_IZQ expresion PAR_DER`, `cond_factor: PAR_IZQ condicion PAR_DER`):** No generan tercetos.
-- **Acción:** Descartan los paréntesis propagando directamente la referencia interna (`strcpy($$, $2)`).
+- **Agrupación con paréntesis:**
+- **Aritmética (factor:** PAR_IZQ expresion PAR_DER): Descarta los paréntesis y propaga la referencia interna mediante strcpy($$, $2).
+- **Lógica (cond_factor:** PAR_IZQ condicion PAR_DER): Descarta los paréntesis y propaga las listas truelist y falselist de la condición interna mediante $$ = $2.
 
 
 ##### 4.2 Declaración e Inicialización de Variables
@@ -92,48 +98,66 @@ Para interpretar las acciones semánticas de cada producción, se utilizan los s
 - **Acción:** No genera ningún terceto. Según el token reconocido, obtiene el símbolo correspondiente (>, <, >=, <=, ==, !=) y lo guarda en $$. De esta manera, la siguiente regla puede utilizar ese símbolo para generar el terceto de comparación.
 
 - **Comparaciones (`comparacion: expresion operador_comparacion expresion`):**
-- **Acción:** Genera el terceto de comparación `crear_terceto($2, $1, $3)` (ej. `[T3] (>, a, 5/1)`) y propaga su referencia `"[T3]"` en `$$`.
+- **Acción:** Genera el terceto de comparación pos_comp = crear_terceto($2, $1, $3) (ej. [T0] (>, x, 5/1)). Luego, genera un salto condicional por falso pos_bf = crear_terceto("BF", "[T0]", "?"), cuyo destino queda pendiente. Finalmente, inicializa $$.truelist vacía y guarda pos_bf en $$.falselist para completar el destino del salto cuando se conozca.
 
 #### 4.4 Asignaciones
 
 - **Regla (`asignacion: ID OP_ASIG expresion PUNTO_COMA`):**
 - **Acción:** Verifica que la variable destino esté declarada con (verificar_variable($1)) y genera el terceto de asignación crear_terceto("=", $1, $3), donde $1 es la variable destino y $3 es el valor de     la expresión (ej. [T4] (=, x, [T2]))..
 
-#### 4.5 Operadores Lógicos (`and` / `or`)
 
-El compilador evalúa todas las partes de una condición lógica antes de decidir si debe realizar un salto. Guarda el resultado de cada comparación en un terceto ([Tn]) y luego los combina mediante AND u OR.
+### 4.5 Operadores Lógicos (`and` / `or`) con Cortocircuito
 
-- **Operador lógico AND (`cond_and: cond_and OP_AND cond_factor`):**
-  - **Acción:** Toma las referencias booleanas de ambos operandos (`$1` y `$3`), genera el terceto lógico `crear_terceto("AND", $1, $3)` (ej. `[T5] (AND, [T3], [T4])`) y propaga su referencia `"[T5]"` en `$$`.
-- **Operador lógico OR (`cond_or: cond_or OP_OR cond_and`):**
-  - **Acción:** Toma las referencias booleanas de ambos operandos (`$1` y `$3`), genera el terceto lógico `crear_terceto("OR", $1, $3)` (ej. `[T6] (OR, [T5], [T2])`) y propaga su referencia `"[T6]"` en `$$`.
+El compilador no genera tercetos booleanos intermedios (`AND`/`OR`), sino que resuelve la evaluación lógica mediante cortocircuito y *backpatching* sobre las listas `truelist` y `falselist`:
 
-#### 4.6 Estructura Condicional `si` / `sino`
+- **Marcador de posición (`M: /* vacio */`):** Guarda en `$$` el índice del próximo terceto a generarse (`$$ = indice_terceto`). Marca el punto de entrada de la segunda subcondición.
+
+- **Operador lógico AND (`cond_and: cond_and OP_AND M cond_factor`):**
+  - **Acción:** Si el operando izquierdo (`$1`) es falso, su salto en `falselist` ya apunta al destino final, por lo que no se evalúa el operando derecho (`$4`). Si es verdadero, se completa `$1.truelist` apuntando al marcador `M` (`backpatch($1.truelist, $3)`) para continuar con la evaluación de `$4`. Finalmente, la regla propaga `$$.truelist = $4.truelist` y combina ambas listas falsas: `$$.falselist = combinar_listas($1.falselist, $4.falselist)`.
+
+- **Operador lógico OR (`cond_or: cond_or OP_OR {A1} M cond_and`):**
+  - **Acción en `{A1}`:** Convierte el último salto `BF` del operando izquierdo (`$1`) en un salto por verdadero `BV` y lo mueve de `$1.falselist` a `$1.truelist`. De esta manera, si la primera condición es verdadera, salta directamente al destino verdadero sin evaluar la segunda.
+  - **Acción al reducir la regla completa:** Completa `$1.falselist` apuntando al marcador `M` (`backpatch($1.falselist, $4)`) para evaluar `$5` únicamente cuando `$1` haya resultado falso. Finalmente, propaga `$$.truelist = combinar_listas($1.truelist, $5.truelist)` y `$$.falselist = $5.falselist`.
+
+
+
+
+
+### 4.6 Estructura Condicional `si` / `sino`
 
 - **Al reducir la condición (`marca_si: PR_SI PAR_IZQ condicion PAR_DER`):**
-  - **Acción:** Genera el terceto de Bifurcación por Falso con destino pendiente: `crear_terceto("BF", $3, "?")` y apila su índice (`pos_bf`) en `pila_saltos` mediante `apilar(pos_bf)`.
+  - **Acción:** Completa todos los saltos verdaderos pendientes (`$3.truelist`) con el índice de inicio del bloque `si` (`backpatch($3.truelist, indice_terceto)`) y apila la estructura `CondAttr` en `pila_condiciones` (`apilar_cond($3)`) para conservar su `falselist`.
+
 - **Caso `si` simple (`si: marca_si bloque`):**
-  - **Acción:** Al finalizar el bloque, desapila `pos_bf` de `pila_saltos` y completa su segundo operando con la dirección del próximo terceto a generar (`modificar_terceto(pos_bf, "[T_fin]")`).
+  - **Acción:** Al finalizar el bloque, desapila `c` de `pila_condiciones` y completa todos los saltos de `c.falselist` con la dirección del próximo terceto fuera de la estructura (`backpatch(c.falselist, indice_terceto)`).
+
 - **Caso `si` con `sino` (`si: marca_si bloque PR_SINO {A1} bloque {A2}`):**
   - **En `{A1}` (al finalizar el bloque `si`, antes de entrar al `sino`):**
-    1. Desapila `pos_bf` de `pila_saltos`.
-    2. Genera un terceto de Bifurcación Incondicional con destino pendiente para esquivar el bloque `sino`: `crear_terceto("BI", "?", "-")`, y apila su índice (`pos_bi`).
-    3. Completa el destino de `pos_bf` apuntando al inicio del bloque `sino` (`modificar_terceto(pos_bf, "[T_sino]")`).
+    1. Desapila `c` de `pila_condiciones`.
+    2. Genera un terceto de bifurcación incondicional con destino pendiente para esquivar el bloque `sino`: `crear_terceto("BI", "?", "-")`, y apila su índice (`pos_bi`) en `pila_saltos`.
+    3. Completa `c.falselist` apuntando al inicio del bloque `sino` (`backpatch(c.falselist, indice_terceto)`).
+
   - **En `{A2}` (al finalizar el bloque `sino`):**
     1. Desapila `pos_bi` de `pila_saltos` y completa su primer operando (`modificar_terceto_op1(pos_bi, "[T_fin]")`) para continuar la ejecución fuera de la estructura.
 
-#### 4.7 Estructura Iterativa `mientras`
+
+   
+### 4.7 Estructura Iterativa `mientras`
 
 - **Al iniciar el bucle (`inicio_mientras: PR_MIENTRAS`):**
   - **Acción:** Guarda en `pila_saltos` el índice del próximo terceto a generar (`apilar(indice_terceto)`), marcando el punto exacto donde comienza a evaluarse la condición.
-- **Al reducir la condición (`condicion_mientras: inicio_mientras PAR_IZQ condicion PAR_DER`):**
-  - **Acción:** Genera el terceto de salida por falso con destino pendiente `crear_terceto("BF", $3, "?")` y apila su índice (`pos_bf`) en `pila_saltos`.
-- **Al finalizar el bloque del bucle (`mientras: condicion_mientras bloque`):**
-  - **Acción:** Desapila dos índices de `pila_saltos`:
-    1. El primer valor desapilado (`pos_bf`) corresponde al terceto bf incompleto.
-    2. El segundo valor desapilado (`pos_inicio`) corresponde al comienzo de la condición. Con él se genera el salto incondicional de retorno: `crear_terceto("BI", "[T_inicio]", "-")`.
-    3. Al final se completa el destino pendiente de `pos_bf` con el índice del terceto siguiente al `BI` (`modificar_terceto(pos_bf, "[T_fin]")`).
 
+- **Al reducir la condición (`condicion_mientras: inicio_mientras PAR_IZQ condicion PAR_DER`):**
+  - **Acción:** Completa todos los saltos verdaderos pendientes (`$3.truelist`) apuntando al inicio del cuerpo del bucle (`backpatch($3.truelist, indice_terceto)`) y apila `$3` en `pila_condiciones` (`apilar_cond($3)`).
+
+- **Al finalizar el bloque del bucle (`mientras: condicion_mientras bloque`):**
+  - **Acción:**
+    1. Desapila `c` de `pila_condiciones` y `pos_inicio` de `pila_saltos`.
+    2. Genera el salto incondicional de retorno al comienzo de la condición: `crear_terceto("BI", "[T_inicio]", "-")`.
+    3. Completa todos los saltos de `c.falselist` con el índice del terceto siguiente al `BI` para salir del bucle (`backpatch(c.falselist, indice_terceto)`).
+   
+
+  
 #### 4.8 Sentencias de Salida y Retorno (`mostrar` / `retornar`)
 
 - **Sentencia `mostrar` (`argumentos_mostrar` / `lista_ids_mostrar`):**
