@@ -16,17 +16,17 @@ Especificaciones y bitácoras de cada etapa del compilador.
 
 ## Modelos usados
 
-_(modelos de IA utilizados como asistencia, para qué se usaron y qué se revisó a mano)_
+_(Modelos de IA utilizados, para qué se usaron y qué se verificó manualmente)_
 
 | Etapa | Modelo | Uso |
 |-------|--------|-----|
-| 01-diseno | Gemini / ChatGPT | Asistencia para estructurar las reglas léxicas, sintácticas y de tipos racionales de Razio. Se revisó a mano la compatibilidad con los requerimientos de la cátedra y la ausencia de ambigüedades. |
-| 02-tabla-simbolos | Gemini | Apoyo en el diseño de la estructura de datos en C para almacenar identificadores, tipos y constantes racionales. Se validó manualmente el manejo de memoria, duplicados y exportación a `tabla_simbolos.txt`. |
-| 03-analizador-lexico | Gemini | Consultas sobre expresiones regulares en Flex (detección de números racionales `a/b`, identificadores y comentarios) y diseño del AFD. Se probaron y ajustaron a mano todos los tokens y casos borde. |
-| 04-analizador-sintactico | Gemini | Asistencia para resolver conflictos shift/reduce en Bison y estructurar la gramática libre de contexto (funciones, `si/sino`, `mientras`, `and`/`or`). Se verificó manualmente el árbol de derivación y las precedencias. |
-| 05-errores | Gemini | Apoyo en la definición de validaciones semánticas (variables no declaradas, división por cero en racionales, alcance global) y recuperación de errores. Se testearon a mano todos los casos de error. |
-| 06-codigo-intermedio | Gemini | Asistencia en el esquema de generación de tercetos, manejo de pilas para expresiones y saltos en cortocircuito (`and`/`or`). Se revisó y trazó a mano la numeración de tercetos y etiquetas. |
-| 07-codigo-assembler | Gemini | Apoyo en la traducción de tercetos a ensamblador x86 (NASM) para aritmética de racionales (numerador/denominador, simplificación) y llamadas al sistema. Se depuró y probó manualmente `salida.asm` hasta generar `salida.exe`. |
+| 01-diseno | Gemini / ChatGPT | Ayuda para redactar y organizar la especificación del lenguaje. Se revisó que las reglas fueran correctas y cumplieran con las consignas. |
+| 02-tabla-simbolos | Gemini | Ayuda para diseñar la estructura de datos y el formato de exportación. Se verificó el manejo de memoria y se probaron distintos casos. |
+| 03-analizador-lexico | Gemini | Consultas sobre el reconocimiento de tokens y los casos especiales. Se revisaron y probaron las reglas léxicas. |
+| 04-analizador-sintactico | Gemini | Ayuda para revisar la gramática en Bison y resolver conflictos. Se comprobaron la precedencia de operadores y las estructuras de control. |
+| 05-errores | Gemini | Ayuda para organizar las validaciones de errores léxicos, sintácticos y semánticos. Se probaron los distintos casos y mensajes de error. |
+| 06-codigo-intermedio | Gemini | Consultas sobre la generación de tercetos y los saltos condicionales. Se revisó manualmente la salida de `tercetos.txt`. |
+| 07-codigo-assembler | Gemini | Ayuda para traducir los tercetos a assembler y corregir errores de compilación. Se verificó la ejecución del programa generado. |
 
 ## Convención
 
