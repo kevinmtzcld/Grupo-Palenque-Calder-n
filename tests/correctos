@@ -46,30 +46,3 @@ principal() {
 
 
 
-
-
-
-4)********************imprime:
-Promedio:
-7/1
-El alumno aprueba
-*******************
-
-
-racional notauno = 6/1, notados = 8/1, promedio, asistencia = 4/5;
-
-def calcularpromedio() {
-    promedio = (notauno + notados) / 2/1;
-    retornar(promedio);
-}
-
-principal() {
-    promedio = calcularpromedio();
-    mostrar("Promedio:", promedio);
-
-    si (promedio >= 4/1 and asistencia >= 3/4) {
-        mostrar("El alumno aprueba");
-    } sino {
-        mostrar("El alumno desaprueba");
-    }
-}
