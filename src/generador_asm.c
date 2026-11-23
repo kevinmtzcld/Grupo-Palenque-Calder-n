@@ -2,10 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include "generador_asm.h"
 
 /* ============================================================================
- * 1. ACCESO A LAS ESTRUCTURAS GLOBALES DEL L蒟ICO Y SINT罜TICO
+ * 1. ACCESO A LAS ESTRUCTURAS GLOBALES DEL L脡XICO Y SINT脕CTICO
  * ============================================================================ */
 #define MAX_BUFFER 256
 
@@ -64,7 +63,7 @@ void emitir_carga_operando(FILE *asm_file, const char *op, const char *reg_num, 
     }
 }
 
-/* Extrae el n鷐ero N de una referencia "[TN]" para formar "ETIQ_N" */
+/* Extrae el n煤mero N de una referencia "[TN]" para formar "ETIQ_N" */
 int obtener_indice_salto(const char *ref) {
     if (ref[0] == '[' && ref[1] == 'T') {
         return atoi(ref + 2);
@@ -72,7 +71,7 @@ int obtener_indice_salto(const char *ref) {
     return -1;
 }
 
-/* Busca el 韓dice STR_k en la Tabla de S韒bolos dado el texto literal */
+/* Busca el 铆ndice STR_k en la Tabla de S铆mbolos dado el texto literal */
 int buscar_indice_cadena(const char *texto) {
     int idx = 0;
     for (int i = 0; i < cant_simbolos; i++) {
@@ -182,7 +181,7 @@ void emitir_rutinas_auxiliares(FILE *asm_file) {
     fprintf(asm_file, "    add rsp, 40\n");
     fprintf(asm_file, "    ret\n\n");
 
-    /* RUTINAS 5 y 6: Manejadores de error en ejecuci髇 */
+    /* RUTINAS 5 y 6: Manejadores de error en ejecuci贸n */
     fprintf(asm_file, "error_div_cero:\n");
     fprintf(asm_file, "    sub rsp, 40\n");
     fprintf(asm_file, "    lea rcx, [rel err_cero]\n");
@@ -199,7 +198,7 @@ void emitir_rutinas_auxiliares(FILE *asm_file) {
 }
 
 /* ============================================================================
- * 4. TRADUCCI覰 DE TERCETOS A ASSEMBLER x86-64
+ * 4. TRADUCCI脫N DE TERCETOS A ASSEMBLER x86-64
  * ============================================================================ */
 void emitir_tercetos_asm(FILE *asm_file) {
     for (int i = 0; i < indice_terceto; i++) {
@@ -209,7 +208,7 @@ void emitir_tercetos_asm(FILE *asm_file) {
 
         fprintf(asm_file, "ETIQ_%d: ; [%s, %s, %s]\n", i, op, op1, op2);
 
-        /* 1. ASIGNACI覰: (=, destino, origen) */
+        /* 1. ASIGNACI脫N: (=, destino, origen) */
         if (strcmp(op, "=") == 0) {
             emitir_carga_operando(asm_file, op2, "eax", "ebx");
             fprintf(asm_file, "    call normalizar_racional\n");
@@ -255,7 +254,7 @@ void emitir_tercetos_asm(FILE *asm_file) {
             fprintf(asm_file, "    mov [rel T%d_num], eax\n", i);
             fprintf(asm_file, "    mov [rel T%d_den], ebx\n\n", i);
         }
-        /* 3. MULTIPLICACI覰 Y DIVISI覰: (*, a/b, c/d) o (/, a/b, c/d) con simplificaci髇 cruzada */
+        /* 3. MULTIPLICACI脫N Y DIVISI脫N: (*, a/b, c/d) o (/, a/b, c/d) con simplificaci贸n cruzada */
         else if (strcmp(op, "*") == 0 || strcmp(op, "/") == 0) {
             emitir_carga_operando(asm_file, op1, "eax", "ebx");
             fprintf(asm_file, "    movsxd r12, eax\n");
@@ -263,7 +262,7 @@ void emitir_tercetos_asm(FILE *asm_file) {
             emitir_carga_operando(asm_file, op2, "eax", "ebx");
 
             if (strcmp(op, "/") == 0) {
-                /* Divisi髇 por cero antes de invertir la segunda fracci髇 */
+                /* Divisi贸n por cero antes de invertir la segunda fracci贸n */
                 fprintf(asm_file, "    cmp eax, 0\n");
                 fprintf(asm_file, "    je error_div_cero\n");
                 /* Dividir por c/d equivale a multiplicar por d/c */
@@ -274,7 +273,7 @@ void emitir_tercetos_asm(FILE *asm_file) {
                 fprintf(asm_file, "    movsxd r15, ebx\n");
             }
 
-            /* Simplificaci髇 cruzada 1: g1 = MCD(|num1|, |den2|) */
+            /* Simplificaci贸n cruzada 1: g1 = MCD(|num1|, |den2|) */
             fprintf(asm_file, "    mov rax, r12\n");
             fprintf(asm_file, "    mov rbx, r15\n");
             fprintf(asm_file, "    call mcd_64_positivo\n");
@@ -288,7 +287,7 @@ void emitir_tercetos_asm(FILE *asm_file) {
             fprintf(asm_file, "    idiv rcx\n");
             fprintf(asm_file, "    mov r15, rax\n");
 
-            /* Simplificaci髇 cruzada 2: g2 = MCD(|num2|, |den1|) */
+            /* Simplificaci贸n cruzada 2: g2 = MCD(|num2|, |den1|) */
             fprintf(asm_file, "    mov rax, r14\n");
             fprintf(asm_file, "    mov rbx, r13\n");
             fprintf(asm_file, "    call mcd_64_positivo\n");
@@ -349,29 +348,19 @@ void emitir_tercetos_asm(FILE *asm_file) {
             fprintf(asm_file, "    mov [rel T%d_num], eax\n", i);
             fprintf(asm_file, "    mov dword [rel T%d_den], 1\n\n", i);
         }
-        /* 5. OPERADORES L覩ICOS: (AND, op1, op2) y (OR, op1, op2) */
-        else if (strcmp(op, "AND") == 0 || strcmp(op, "OR") == 0) {
-            emitir_carga_operando(asm_file, op1, "eax", "ebx");
-            emitir_carga_operando(asm_file, op2, "ecx", "edx");
-            fprintf(asm_file, "    cmp eax, 0\n");
-            fprintf(asm_file, "    setne al\n");
-            fprintf(asm_file, "    cmp ecx, 0\n");
-            fprintf(asm_file, "    setne cl\n");
-            if (strcmp(op, "AND") == 0) {
-                fprintf(asm_file, "    and al, cl\n");
-            } else {
-                fprintf(asm_file, "    or al, cl\n");
-            }
-            fprintf(asm_file, "    movzx eax, al\n");
-            fprintf(asm_file, "    mov [rel T%d_num], eax\n", i);
-            fprintf(asm_file, "    mov dword [rel T%d_den], 1\n\n", i);
-        }
-        /* 6. SALTO CONDICIONAL POR FALSO: (BF, condicion, [Td]) */
+        /* 5. SALTO CONDICIONAL POR FALSO: (BF, condicion, [Td]) */
         else if (strcmp(op, "BF") == 0) {
             int dest = obtener_indice_salto(op2);
             emitir_carga_operando(asm_file, op1, "eax", "ebx");
             fprintf(asm_file, "    cmp eax, 0\n");
             fprintf(asm_file, "    je ETIQ_%d\n\n", dest);
+        }
+        /* 6. SALTO CONDICIONAL POR VERDADERO: (BV, condicion, [Td]) */
+        else if (strcmp(op, "BV") == 0) {
+            int dest = obtener_indice_salto(op2);
+            emitir_carga_operando(asm_file, op1, "eax", "ebx");
+            fprintf(asm_file, "    cmp eax, 0\n");
+            fprintf(asm_file, "    jne ETIQ_%d\n\n", dest);
         }
         /* 7. SALTO INCONDICIONAL: (BI, [Td], -) */
         else if (strcmp(op, "BI") == 0) {
@@ -390,7 +379,7 @@ void emitir_tercetos_asm(FILE *asm_file) {
             fprintf(asm_file, "    lea rdx, [rel STR_%d]\n", idx_str);
             fprintf(asm_file, "    call printf\n\n");
         }
-        /* 9. SALTO A PRINCIPAL Y DEFINICI覰/LLAMADA DE FUNCIONES */
+        /* 9. SALTO A PRINCIPAL Y DEFINICI脫N/LLAMADA DE FUNCIONES */
         else if (strcmp(op, "IR_PRINCIPAL") == 0) {
             fprintf(asm_file, "    jmp ETIQ_PRINCIPAL\n\n");
         }
@@ -425,7 +414,7 @@ void emitir_tercetos_asm(FILE *asm_file) {
 }
 
 /* ============================================================================
- * 5. FUNCI覰 PRINCIPAL DE GENERACI覰
+ * 5. FUNCI脫N PRINCIPAL DE GENERACI脫N
  * ============================================================================ */
 void generar_assembler(void) {
     FILE *asm_file = fopen("salida.asm", "w");
@@ -443,7 +432,7 @@ void generar_assembler(void) {
     fprintf(asm_file, "extern printf\n");
     fprintf(asm_file, "extern exit\n\n");
 
-    /* Secci髇 .data */
+    /* Secci贸n .data */
     fprintf(asm_file, "section .data\n");
     fprintf(asm_file, "    fmt_rac  db \"%%d/%%d\", 10, 0\n");
     fprintf(asm_file, "    fmt_str  db \"%%s\", 10, 0\n");
@@ -472,12 +461,12 @@ void generar_assembler(void) {
         fprintf(asm_file, "    T%d_den dd 1\n", i);
     }
 
-    /* Secci髇 .text */
+    /* Secci贸n .text */
     fprintf(asm_file, "\nsection .text\n");
     fprintf(asm_file, "main:\n");
     fprintf(asm_file, "    sub rsp, 40\n\n");
 
-    /* Traducci髇 completa de todos los tercetos */
+    /* Traducci贸n completa de todos los tercetos */
     emitir_tercetos_asm(asm_file);
 
     fprintf(asm_file, "\n    xor ecx, ecx\n");
