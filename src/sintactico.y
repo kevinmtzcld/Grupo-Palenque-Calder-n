@@ -6,7 +6,6 @@
 #include <stdlib.h>
 #include <string.h>
 // 12/11
-#include "generador_asm.h"
 
 #include <stdlib.h>
 
@@ -17,6 +16,7 @@ extern int error_lexico;
 extern char buffer[];
 extern FILE *inputFile;
 extern void exportarTS(void);
+extern void generar_assembler(void);
 
 int error_sintactico = 0; /* <-- AGREGAR ESTA BANDERA */
 
@@ -155,10 +155,6 @@ int desapilar(void) {
 
 
 
-
-
-
-
 %}
 
 
@@ -169,16 +165,43 @@ int desapilar(void) {
    
    
 //---------------------------------------PERMITE PASAR CONTENIDOS ENTRE REGLAS---------------------------------------------------------------------------------------------------------
-/* 1. Define que los elementos de Bison transportarán texto (char[50]) en vez de enteros , CONSERVAR LEXEMA PARA luego crear el terceto*/
-%union {
-    char str_val[50];
-}
-/* 2. Le asigna ese contenedor de texto a los tokens que traen nombres de variables o valores */
-%token <str_val> ID LIT_RACIONAL LIT_CADENA
-/* 3. Permite que estas reglas devuelvan texto ($$) para propagar variables o tercetos ([T_n]) */
-%type <str_val> expresion termino factor condicion cond_or cond_and cond_factor comparacion operador_comparacion marca_si inicio_mientras condicion_mientras valor_retorno
-//------------------------------------------------------------------------------------------------------------------------------------------------
+%code requires {
+    // 1. ListaSaltos: es simplemente un array de números enteros.
+    //    Guarda los ÍNDICES de los tercetos de salto que tienen un "?" pendiente.
+    //    Ejemplo: si [T1] y [T3] son saltos pendientes, list = {1, 3} y count = 2.
+    typedef struct {
+        int list[100]; // Los números de terceto a rellenar (hasta 100 saltos)
+        int count;     // Cuántos saltos hay guardados actualmente en el array
+    } ListaSaltos;
 
+    // 2. CondAttr ("Condition Attributes" = Atributos de una Condición):
+    //    Es la "ficha" completa que transporta cada regla lógica (comparacion, cond_and, condicion).
+    //    Separa los saltos pendientes en dos grupos según a dónde deben ir:
+    typedef struct {
+        ListaSaltos truelist;  // Lista de saltos que deben ir al bloque VERDADERO (entrar al si/mientras)
+        ListaSaltos falselist; // Lista de saltos que deben ir al bloque FALSO (salir del si/mientras)
+    } CondAttr;
+
+    ListaSaltos crear_lista(int pos);
+    ListaSaltos lista_vacia(void);
+    ListaSaltos combinar_listas(ListaSaltos l1, ListaSaltos l2);
+    void backpatch(ListaSaltos l, int destino);
+    void apilar_cond(CondAttr c);
+    CondAttr desapilar_cond(void);
+}
+
+%union {
+    char str_val[50];  // Para variables y tercetos aritméticos (ej. "x", "[T0]")
+    int int_val;       // Para el marcador M (guarda un número de terceto)
+    CondAttr cond_val; // NUEVO: Para reglas lógicas (transporta truelist y falselist)
+}
+
+%token <str_val> ID LIT_RACIONAL LIT_CADENA
+
+%type <str_val> expresion termino factor operador_comparacion valor_retorno
+// Le asignamos el tipo cond_val (CondAttr) a todas las reglas lógicas:
+%type <cond_val> condicion cond_or cond_and cond_factor comparacion
+%type <int_val> M
 
 
 /* Identificadores y Literales */
@@ -371,10 +394,15 @@ factor:
     }
 ;
 	
-	
 
 
-
+/* Marca auxiliar: captura el índice del próximo terceto a generarse */
+M:
+    /* vacio */
+    {
+        $$ = indice_terceto;
+    }
+;
 
 
 ////si: PR_SI PAR_IZQ condicion PAR_DER bloque | PR_SI PAR_IZQ condicion PAR_DER bloque PR_SINO bloque;
@@ -386,49 +414,40 @@ factor:
 
 
 /* Regla auxiliar que emite el BF apenas termina de evaluar la condición */
-marca_si: 
+marca_si:
     PR_SI PAR_IZQ condicion PAR_DER
     {
-        int pos_bf = crear_terceto("BF", $3, "?");
-        apilar(pos_bf);
+        /* Todos los saltos verdaderos entran directo al bloque del SI (indice_terceto) */
+        backpatch($3.truelist, indice_terceto);
+        /* Guardamos la falselist para parcharla cuando sepamos dónde termina el bloque */
+        apilar_cond($3);
     }
 ;
 
-si: 
+si:
     marca_si bloque
     {
-        /* SI SIMPLE (Sin SINO) */
-        int pos_bf = desapilar();		//termina el bloque y ya se sabe el indice al que debe saltar el bf pendiente
-        char dir_salida[10];
-        sprintf(dir_salida, "[T%d]", indice_terceto);
-        
-        modificar_terceto(pos_bf, dir_salida);
+        /* SI SIMPLE: los saltos falsos salen al final del bloque */
+        CondAttr c = desapilar_cond();
+        backpatch(c.falselist, indice_terceto);
     }
   | marca_si bloque PR_SINO
     {
         /* TRANSICIÓN AL SINO */
-        int pos_bf = desapilar();	//DESAPILA LA POSICION DEL BF PORQUE AHORA LA VA COMPLETAR
-									//Y  PORQUE AHORA VA A APILAR LA POS DEL TERCETO BI QUE ES EL PROXIMO A COMPLETAR
-        
-        /* 1. Crea el BI con destino temporal en operando1 */
+        CondAttr c = desapilar_cond();
         int pos_bi = crear_terceto("BI", "?", "-");
         apilar(pos_bi);
-        
-        /* 2. Parchea el BF para que apunte al terceto pos_bi + 1 (inicio del sino) */
-        char dir_sino[10];
-        sprintf(dir_sino, "[T%d]", indice_terceto); // copia en dir_sino el indice al terceto inicio del sino
-        modificar_terceto(pos_bf, dir_sino);		//COMPLETA EL LA DIRECCIÓN DE SALTO DEL TERCETO BF PENDIENTE, SALTA DIRECTO AL BLOQUE SINO
+
+        /* Los saltos falsos de la condición van al inicio del SINO */
+        backpatch(c.falselist, indice_terceto);
     }
     bloque
     {
-        /* FIN DEL SINO: Parchea el BI con modificar_terceto_op1 */
-        int pos_bi = desapilar();	//RECUPERA LA POS DEL TERCETO DE BI A COMPLETAR
-        char dir_salida[10];	
-        sprintf(dir_salida, "[T%d]", indice_terceto); //COPIA EL INDICE DEL PROX TERCETO A "DIR_SALIDA" INDICE_TERCETO YA TIENE SIEMPRE EL 
-        											//INDICE DEL PROX TERCETO
-        
-        modificar_terceto_op1(pos_bi, dir_salida);//COMPLETA EL LA DIRECCIÓN DE SALTO DEL TERCETO BI (POS_BI) PENDIENTE
-													//SALTA DIRECTO AL PRIMER TERCETO FUERA DEL SINO (DIR_SALIDA)
+        /* FIN DEL SINO: el BI salta al final */
+        int pos_bi = desapilar();
+        char dir_salida[15];
+        sprintf(dir_salida, "[T%d]", indice_terceto);
+        modificar_terceto_op1(pos_bi, dir_salida);
     }
 ;
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -462,34 +481,33 @@ si:
 inicio_mientras:
     PR_MIENTRAS
     {
-        apilar(indice_terceto); // Guarda la posición de retorno para reevaluar la condición al finalizar cada iteración.
+        apilar(indice_terceto); /* Guarda el inicio de la condición para el BI final */
     }
 ;
 
-/* Marca 2: Genera el salto por falso (BF) después de evaluar la condición. */
 condicion_mientras:
     inicio_mientras PAR_IZQ condicion PAR_DER
     {
-        int pos_bf = crear_terceto("BF", $3, "?"); // Genera el salto de salida con destino pendiente.
-        apilar(pos_bf); // Guarda la posición del BF para completar su destino al finalizar el bucle.
+        /* Todos los saltos verdaderos entran al cuerpo del bucle */
+        backpatch($3.truelist, indice_terceto);
+        /* Apilamos la falselist para salir del bucle al terminar */
+        apilar_cond($3);
     }
 ;
 
 mientras:
     condicion_mientras bloque
     {
-        int pos_bf = desapilar();     // Recupera la posición del BF para completar el salto de salida.
-        int pos_inicio = desapilar(); // Recupera la posición donde debe volver a evaluarse la condición.
+        CondAttr c = desapilar_cond();
+        int pos_inicio = desapilar();
 
-        /* Genera el salto incondicional (BI) para volver al inicio del bucle. */
-        char dir_inicio[10];
-        sprintf(dir_inicio, "[T%d]", pos_inicio); // Construye la referencia al terceto donde comienza la condición.
-        crear_terceto("BI", dir_inicio, "-");     // Genera el salto de retorno al inicio del mientras.
+        /* Salto incondicional al inicio de la condición */
+        char dir_inicio[15];
+        sprintf(dir_inicio, "[T%d]", pos_inicio);
+        crear_terceto("BI", dir_inicio, "-");
 
-        /* Completa el destino del BF para salir del bucle cuando la condición sea falsa. */
-        char dir_salida[10];
-        sprintf(dir_salida, "[T%d]", indice_terceto); // Obtiene la posición del próximo terceto, fuera del bucle.
-        modificar_terceto(pos_bf, dir_salida);       // Reemplaza el destino pendiente del BF por la dirección de salida.
+        /* Los saltos falsos salen afuera del mientras */
+        backpatch(c.falselist, indice_terceto);
     }
 ;
 
@@ -601,56 +619,114 @@ cond_factor:						/* Permite una comparación directa o una condición entre par
 
 // Generación de tercetos lógicos AND y OR
 
+/*-------------------------- MANEJO DE AND Y OR CON CORTOCIRCUITO --------------------------*/
+
 condicion:
     cond_or
     {
-        strcpy($$, $1); // Transmite el resultado de toda la condición.
+        $$ = $1; // Propaga el paquete final (truelist y falselist) hacia 'si' o 'mientras'[cite: 3, 4]
     }
 ;
 
 cond_or:
     cond_and
     {
-        strcpy($$, $1); // Si no hay OR, transmite el resultado de cond_and.
+        $$ = $1; // Caso base: sin 'or', pasa las listas intactas hacia arriba[cite: 3, 4]
     }
-  | cond_or OP_OR cond_and
+  | cond_or OP_OR
     {
-        int pos = crear_terceto("OR", $1, $3); // Genera un terceto OR combinando las dos condiciones.
-        sprintf($$, "[T%d]", pos); // Guarda la referencia al terceto generado.
+        // Acción intermedia (justo tras leer 'or', antes de la 2da condición):
+        // Toma el último salto BF del operando izquierdo ($1) y lo pasa a BV (salto por verdadero)[cite: 3, 4]
+        int ultimo_salto = $1.falselist.list[$1.falselist.count - 1];
+        strcpy(tabla_tercetos[ultimo_salto].operacion, "BV");
+
+        // Mueve ese salto de falselist a truelist: si la 1ra condición da verdadera,
+        // saltará directo al bloque verdadero (cortocircuito) sin evaluar la 2da[cite: 3, 4, 6]
+        $1.truelist = combinar_listas($1.truelist, crear_lista(ultimo_salto));
+        $1.falselist.count--;
+    }
+    M cond_and
+    {
+        // Si el 1er operando ($1) dio falso, completa sus saltos falsos apuntando a M ($4)
+        // para que pase a evaluar el 2do operando ($5)[cite: 3, 4, 6]
+        backpatch($1.falselist, $4);
+
+        // Une los saltos verdaderos de ambos lados (basta que uno se cumpla para entrar)[cite: 3, 4, 6]
+        $$.truelist  = combinar_listas($1.truelist, $5.truelist);
+
+        // Si el 2do operando también falla, sale por los saltos falsos de $5[cite: 3, 4, 6]
+        $$.falselist = $5.falselist;
     }
 ;
 
 cond_and:
     cond_factor
     {
-        strcpy($$, $1); // Si no hay AND, transmite el resultado de cond_factor.
+        // Caso base: copia las listas de la condición hacia arriba.
+        $$ = $1;
     }
-  | cond_and OP_AND cond_factor
+  | cond_and OP_AND M cond_factor
     {
-        int pos = crear_terceto("AND", $1, $3); // Genera un terceto AND combinando las dos condiciones.
-        sprintf($$, "[T%d]", pos); // Guarda la referencia al terceto generado.
+        // Si la primera condición es verdadera, sus saltos pendientes
+        // deben continuar desde el comienzo de la segunda condición (M).
+        backpatch($1.truelist, $3);
+
+        // El AND será verdadero solamente si la segunda condición es verdadera.
+        // Por eso, conserva los saltos verdaderos de la segunda condición.
+        $$.truelist = $4.truelist;
+
+        // Si cualquiera de las dos condiciones es falsa, todo el AND es falso.
+        // Por eso, junta los saltos falsos de ambas condiciones.
+        $$.falselist = combinar_listas($1.falselist, $4.falselist);
     }
 ;
 
 cond_factor:
     comparacion
     {
-        strcpy($$, $1); // Transmite la referencia al terceto de la comparación.
+        // Caso base: si es una comparación simple (ej. x > 5/1),
+        // simplemente sube su estructura CondAttr (truelist y falselist) hacia arriba sin cambios.
+        $$ = $1;
     }
   | PAR_IZQ condicion PAR_DER
     {
-        strcpy($$, $2); // Transmite el resultado de la condición entre paréntesis.
+        // Agrupación entre paréntesis (ej. (a > 1/1 or b < 2/1)):
+        // descarta los paréntesis ($1 y $3) y propaga tal cual las listas truelist y falselist
+        // de la condición interna ($2), conservando la prioridad que impusieron los paréntesis.
+        $$ = $2;
     }
 ;
 
-//4-11//--------------------------TERCETO MANEJO DE AND $ OR----------------------------------------------------------------------------------------------------------------------
+comparacion:
+    expresion operador_comparacion expresion
+    {
+        // 1. Genera el terceto que realiza la comparación.
+        //    $1 es el operando izquierdo, $2 es el operador y $3 es el derecho.
+        //    Ejemplo: [T0] (>, x, 5/1)
+        int pos_comp = crear_terceto($2, $1, $3);
 
+        // 2. Declara una cadena para guardar la referencia al terceto de comparación.
+        char ref_comp[15];
 
+        // 3. Convierte el índice del terceto en una referencia textual.
+        //    Ejemplo: si pos_comp = 0, guarda "[T0]" en ref_comp.
+        sprintf(ref_comp, "[T%d]", pos_comp);
 
-comparacion: expresion operador_comparacion expresion
-{
-        int pos = crear_terceto($2, $1, $3);//CREA TERCETO PARA UNA COMPARACIÓN NORMAL
-        sprintf($$, "[T%d]", pos);
+        // 4. Genera un salto por falso (BF) que utiliza la comparación anterior.
+        //    Si la comparación es falsa, salta al destino indicado por "?".
+        //    Ese destino se completará más adelante mediante backpatching.
+        //    Ejemplo: [T1] (BF, [T0], ?)
+        int pos_bf = crear_terceto("BF", ref_comp, "?");
+
+        // 5. Inicializa vacía la lista de saltos por verdadero (truelist).
+        //    Si la comparación es verdadera, no necesita saltar:
+        //    continúa ejecutando el siguiente terceto.
+        $$.truelist = lista_vacia();
+
+        // 6. Crea la lista de saltos por falso (falselist).
+        //    Guarda en ella el índice del BF generado (pos_bf),
+        //    para completar su destino más adelante.
+        $$.falselist = crear_lista(pos_bf);
     }
 ;
 
@@ -671,11 +747,70 @@ operador_comparacion: 							/* Convierte el token de comparación en su símbol
 
 
 
+   
 %%
 
 /* ==========================================
    NIVEL 4: CÓDIGO C ADICIONAL
    ========================================== */
+
+// Crea una lista con UN solo índice de terceto (ej. crear_lista(1) -> list={1}, count=1)
+ListaSaltos crear_lista(int pos) {
+    ListaSaltos l;
+    l.list[0] = pos; // Guarda el índice del terceto en la primera posición
+    l.count = 1;     // Marca que la lista tiene 1 elemento
+    return l;
+}
+
+// Crea una lista vacía (count = 0), cuando todavía no hay saltos pendientes
+ListaSaltos lista_vacia(void) {
+    ListaSaltos l;
+    l.count = 0;
+    return l;
+}
+
+// Une dos listas de saltos en una sola.
+// CLAVE PARA EL 'AND': junta los saltos falsos de la 1ra condición con los de la 2da.
+// Ejemplo: combinar_listas([1], [3]) -> devuelve [1, 3].
+ListaSaltos combinar_listas(ListaSaltos l1, ListaSaltos l2) {
+    ListaSaltos res = l1; // Copia la primera lista
+    for (int i = 0; i < l2.count; i++) {
+        if (res.count < 100) {
+            res.list[res.count++] = l2.list[i]; // Le agrega al final cada elemento de la segunda
+        }
+    }
+    return res;
+}
+
+// BACKPATCH ("parchear hacia atrás"):
+// Recorre todos los índices guardados en la lista 'l' y les cambia el "?" por "[T<destino>]".
+// Ejemplo: backpatch([1, 3], 6) -> entra a tabla_tercetos[1] y tabla_tercetos[3] y les pone "[T6]".
+void backpatch(ListaSaltos l, int destino) {
+    char dir[15];
+    sprintf(dir, "[T%d]", destino); // Arma el texto "[T6]"
+    for (int i = 0; i < l.count; i++) {
+        modificar_terceto(l.list[i], dir); // Reemplaza el "?" en el terceto correspondiente
+    }
+}
+
+// Pila para guardar CondAttr mientras se analiza el cuerpo { ... } de un 'si' o 'mientras'
+CondAttr pila_condiciones[50];
+int tope_cond = 0;
+
+void apilar_cond(CondAttr c) {
+    if (tope_cond < 50) {
+        pila_condiciones[tope_cond++] = c; // Guarda la ficha en la cima de la pila
+    }
+}
+
+CondAttr desapilar_cond(void) {
+    if (tope_cond > 0) {
+        return pila_condiciones[--tope_cond]; // Saca y devuelve la última ficha guardada
+    }
+    CondAttr vacia = { lista_vacia(), lista_vacia() };
+    return vacia;
+}
+
 
 void yyerror(const char *mensaje) {
     printf("\n[ERROR SINTACTICO - Linea %d]: Cerca de '%s'\n", num_linea, buffer);
