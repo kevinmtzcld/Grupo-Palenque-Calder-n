@@ -22,7 +22,7 @@ gcc -o compilador.exe sintactico.tab.c alexico.c generador_asm.c
 ```
 
 ## Cómo ejecutar
-Ubicar el archivo de entrada (ejemplo.raz) en el mismo directorio que compilador.exe y ejecutar:
+Ubicar el archivo de entrada deseado(tomado de la carpeta tests/ y renombrado a ejemplo.raz) en el mismo directorio que compilador.exe y ejecutar:
 
 ```bash
 ./compilador.exe
