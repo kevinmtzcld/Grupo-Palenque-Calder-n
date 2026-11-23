@@ -39,36 +39,36 @@ def · principal  · racional · si · sino · mientras · mostrar · retornar
 
 |  Código | Token              | Lexema                          |
 | :-----: | :----------------- | :------------------------------ |
-| *257* | PR_DEF           | def                           |
-| *258* | PR_PRINCIPAL     | principal                     |
-| *259* | PR_RACIONAL      | racional                      |
-| *260* | PR_SI            | si                            |
-| *261* | PR_SINO          | sino                          |
-| *262* | PR_MIENTRAS      | mientras                      |
-| *263* | PR_MOSTRAR       | mostrar                       |
-| *264* | PR_RETORNAR      | retornar                      |
-| *265* | ID               | Identificador (a, acum)     |
-| *266* | LIT_RACIONAL     | Constante racional (3/4, 5) |
-| *267* | LIT_CADENA       | Cadena de caracteres ("Hola") |
-| *268* | OP_ASIG          | =                             |
-| *269* | OP_SUMA          | +                             |
-| *270* | OP_RESTA         | -                             |
-| *271* | OP_MULT          | *                             |
-| *272* | OP_DIV           | /                             |
-| *273* | COMP_MAYOR       | >                             |
-| *274* | COMP_MENOR       | <                             |
-| *275* | COMP_MAYOR_IGUAL | >=                            |
-| *276* | COMP_MENOR_IGUAL | <=                            |
-| *277* | COMP_IGUAL       | ==                            |
-| *278* | COMP_DISTINTO    | !=                            |
-| *279* | OP_AND           | and                           |
-| *280* | OP_OR            | or                            |
-| *281* | PAR_IZQ          | (                             |
-| *282* | PAR_DER          | )                             |
-| *283* | LLAVE_IZQ        | {                             |
-| *284* | LLAVE_DER        | }                             |
-| *285* | PUNTO_COMA       | ;                             |
-| *286* | COMA             | ,                             |
+| *258* | ID               | Identificador (a, acum)     |
+| *259* | LIT_RACIONAL     | Constante racional (3/4, 5) |
+| *260* | LIT_CADENA       | Cadena de caracteres ("Hola") |
+| *261* | PR_DEF           | def                           |
+| *262* | PR_PRINCIPAL     | principal                     |
+| *263* | PR_RACIONAL      | racional                      |
+| *264* | PR_SI            | si                            |
+| *265* | PR_SINO          | sino                          |
+| *266* | PR_MIENTRAS      | mientras                      |
+| *267* | PR_MOSTRAR       | mostrar                       |
+| *268* | PR_RETORNAR      | retornar                      |
+| *269* | OP_ASIG          | =                             |
+| *270* | OP_SUMA          | +                             |
+| *271* | OP_RESTA         | -                             |
+| *272* | OP_MULT          | *                             |
+| *273* | OP_DIV           | /                             |
+| *274* | COMP_MAYOR       | >                             |
+| *275* | COMP_MENOR       | <                             |
+| *276* | COMP_MAYOR_IGUAL | >=                            |
+| *277* | COMP_MENOR_IGUAL | <=                            |
+| *278* | COMP_IGUAL       | ==                            |
+| *279* | COMP_DISTINTO    | !=                            |
+| *280* | OP_AND           | and                           |
+| *281* | OP_OR            | or                            |
+| *282* | PAR_IZQ          | (                             |
+| *283* | PAR_DER          | )                             |
+| *284* | LLAVE_IZQ        | {                             |
+| *285* | LLAVE_DER        | }                             |
+| *286* | PUNTO_COMA       | ;                             |
+| *287* | COMA             | ,                             |
 
 
 ## 5. Estructura del programa
