@@ -98,7 +98,7 @@ Para interpretar las acciones semánticas de cada producción, se utilizan los s
 - **Acción:** No genera ningún terceto. Según el token reconocido, obtiene el símbolo correspondiente (>, <, >=, <=, ==, !=) y lo guarda en $$. De esta manera, la siguiente regla puede utilizar ese símbolo para generar el terceto de comparación.
 
 - **Comparaciones (`comparacion: expresion operador_comparacion expresion`):**
-- **Acción:** Genera el terceto de comparación pos_comp = crear_terceto($2, $1, $3) (ej. [T0] (>, x, 5/1)). Luego, genera un salto condicional por falso pos_bf = crear_terceto("BF", "[T0]", "?"), cuyo destino queda pendiente. Finalmente, inicializa $$.truelist vacía y guarda pos_bf en $$.falselist para completar el destino del salto cuando se conozca.
+  - **Acción:** Genera el terceto de comparación `pos_comp = crear_terceto($2, $1, $3)` (ej. `[T0] (>, x, 5/1)`). Luego, genera un salto condicional por falso `pos_bf = crear_terceto("BF", "[T0]", "?")`, cuyo destino queda pendiente. Finalmente, inicializa `$$.truelist` vacía y guarda `pos_bf` en `$$.falselist` para completar el destino del salto cuando se conozca.
 
 #### 4.4 Asignaciones
 
