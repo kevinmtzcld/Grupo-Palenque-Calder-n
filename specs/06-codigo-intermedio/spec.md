@@ -92,7 +92,7 @@ Para interpretar las acciones semánticas de cada producción, se utilizan los s
 #### 4.3 Expresiones Aritméticas y Comparaciones
 
 - **Operaciones aritméticas (`expresion: expresion OP_SUMA termino | expresion OP_RESTA termino` y `termino: termino OP_MULT factor | termino OP_DIV factor`):**
-  - **Acción:** Toma los dos operandos de la operación: $1 contiene el operando izquierdo y $3 el operando derecho. Según el operador reconocido (+, -, * o /), genera el terceto correspondiente mediante crear_terceto(op, $1, $3) (ej. [T2] (+, a, 3/4)). Luego, guarda la referencia al terceto generado ([T2]) en $$, para que pueda utilizarse en operaciones posteriores.
+  - **Acción:** Toma los dos operandos de la operación: `$1` contiene el operando izquierdo y `$3` el operando derecho. Según el operador reconocido (`+`, `-`, `*` o `/`), genera el terceto correspondiente mediante `crear_terceto(op, $1, $3)` (ej. `[T2] (+, a, 3/4)`). Luego, guarda la referencia al terceto generado (`[T2]`) en `$$`, para que pueda utilizarse en operaciones posteriores.
   
 - **Operador de comparación (`operador_comparacion: COMP_MAYOR | COMP_MENOR | COMP_MAYOR_IGUAL | COMP_MENOR_IGUAL | COMP_IGUAL | COMP_DISTINTO`):** 
 - **Acción:** No genera ningún terceto. Según el token reconocido, obtiene el símbolo correspondiente (>, <, >=, <=, ==, !=) y lo guarda en $$. De esta manera, la siguiente regla puede utilizar ese símbolo para generar el terceto de comparación.
