@@ -38,10 +38,10 @@ _(Asegurarse de que `ejemplo.raz` tenga el mismo nombre que el archivo indicado 
 - `docs/` — entregables formales de cada etapa
 - `src/` — código del compilador
 - `tests/` — casos de prueba
-  - `correctos` — programas válidos que compilan sin errores[cite: 4]
-  - `ejemplo.raz` — programa base utilizado para generar los archivos de `out/`[cite: 4]
-  - `errores-semanticos` — casos con errores de tipos y validaciones semánticas[cite: 4]
-  - `errrores-lex-sint` — casos con errores léxicos y sintácticos[cite: 4]
-  - `pruebas-requeridas-grupoc` — batería de pruebas obligatorias requeridas por la cátedra[cite: 4]
+  - `correctos` — programas válidos que compilan sin errores
+  - `ejemplo.raz` — programa base utilizado para generar los archivos de `out/`
+  - `errores-semanticos` — casos con errores de tipos y validaciones semánticas
+  - `errrores-lex-sint` — casos con errores léxicos y sintácticos
+  - `pruebas-requeridas-grupoc` — batería de pruebas obligatorias requeridas por la cátedra
 - `out/` — tercetos, tabla de símbolos exportada, `.asm` generado
 - `specs/` — especificaciones y bitácoras por etapa
