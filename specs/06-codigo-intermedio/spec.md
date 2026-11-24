@@ -47,13 +47,10 @@ Aquí tenés la especificación completa de generación de código intermedio ad
 
 ### 4. Estructura de Tercetos por Regla Gramatical (Lenguaje Razio)
 
-**Propagación de Valores y Uso de Marcadores:**
-
-En Bison, los símbolos de las expresiones transportan una cadena de texto (`str_val[50]`, definida en `%union`) para propagar los lexemas (`strcpy($$, $1)`) o las referencias a tercetos aritméticos (`sprintf($$, "[T%d]", pos)`).
-
-Por otro lado, las reglas de condiciones (`condicion`, `cond_or`, `cond_and`, `cond_factor`, `comparacion`) transportan una estructura `CondAttr`, que contiene dos listas de índices de saltos pendientes (`truelist` y `falselist`). Estas listas permiten implementar la evaluación lógica por cortocircuito mediante *backpatching*.
-
-Como Bison ejecuta las acciones semánticas al reducir las producciones, en las estructuras de control (`si`, `sino`, `mientras`) y en las expresiones lógicas (`and`, `or`) se utilizan reglas marcador (`M`, `marca_si`, `inicio_mientras`, `condicion_mientras`) y acciones intermedias. Esto permite guardar posiciones de tercetos durante el análisis, generar los saltos (`BF`, `BV`, `BI`) y completar sus destinos una vez que se conoce a dónde debe dirigirse cada salto.
+* **Propagación de Valores y Uso de Marcadores:**
+  * **Expresiones aritméticas:** Cada regla propaga el operando resultante (el nombre de la variable, el valor literal o la referencia `[Tx]` del terceto recién creado) para que las operaciones siguientes puedan utilizarlo.
+  * **Condiciones lógicas:** Las comparaciones y conectores (`and`, `or`) transmiten dos listas de saltos pendientes (`truelist` y `falselist`), permitiendo resolver la evaluación por cortocircuito.
+  * **Marcadores y *backpatching*:** Como Bison traduce en una sola pasada de izquierda a derecha y aún no conoce el destino de los saltos cuando los emite, las estructuras de control (`si`, `sino`, `mientras`) utilizan reglas marcador (`M`, `marca_si`, `inicio_mientras`, `condicion_mientras`) para guardar posiciones clave. De esta forma, los saltos (`BF`, `BV`, `BI`) se crean con destino pendiente y se rellenan automáticamente una vez que se conoce a qué terceto deben apuntar.
 
 **Convención de Variables Semánticas de Bison (`$$`, `$1`, `$2`, ...)**
 
@@ -107,8 +104,12 @@ El compilador no genera tercetos booleanos intermedios (`AND`/`OR`), sino que re
 - **Marcador de posición (`M: /* vacio */`):**
   - **Acción:** Guarda en `$$` el índice del próximo terceto a generarse (`$$ = indice_terceto`). Marca el punto de entrada de la segunda subcondición.
 
-- **Operador lógico AND (`cond_and: cond_and OP_AND M cond_factor`):**
-  - **Acción:** Si el operando izquierdo (`$1`) es falso, su salto en `falselist` ya apunta al destino final, por lo que no se evalúa el operando derecho (`$4`). Si es verdadero, se completa `$1.truelist` apuntando al marcador `M` (`backpatch($1.truelist, $3)`) para continuar con la evaluación de `$4`. Finalmente, la regla propaga `$$.truelist = $4.truelist` y combina ambas listas falsas: `$$.falselist = combinar_listas($1.falselist, $4.falselist)`.
+* **Operador lógico AND (`cond_and: cond_and OP_AND M cond_factor`):**
+  * **Acción semántica:** Resuelve la evaluación por cortocircuito encadenando ambas condiciones de izquierda a derecha mediante tres operaciones:
+    * **Continuación por verdadero:** Si la primera condición (`$1`) se cumple, se completan sus saltos verdaderos apuntando al marcador `M` (`backpatch($1.truelist, $3)`), para que el flujo avance directamente a evaluar la segunda condición (`$4`).
+    * **Salida por verdadero del conjunto:** Como el `AND` completo solo es verdadero si también se cumple la segunda condición, la expresión hereda únicamente los saltos verdaderos de esta última (`$$.truelist = $4.truelist`), dejándolos pendientes hasta conocer el inicio del bloque.
+    * **Salida por falso (cortocircuito):** Si cualquiera de las dos condiciones falla, toda la expresión es falsa; por eso se unifican ambas listas de saltos por falso (`$$.falselist = combinar_listas($1.falselist, $4.falselist)`). De este modo, si `$1` falla, salta sin evaluar `$4`, y ambas salidas terminarán apuntando al mismo destino falso final.
+      
 
 - **Operador lógico OR (`cond_or: cond_or OP_OR {A1} M cond_and`):**
   - **Acción en `{A1}`:** Convierte el último salto `BF` del operando izquierdo (`$1`) en un salto por verdadero `BV` y lo mueve de `$1.falselist` a `$1.truelist`. De esta manera, si la primera condición es verdadera, salta directamente al destino verdadero sin evaluar la segunda.
