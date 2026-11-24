@@ -111,26 +111,34 @@ El compilador no genera tercetos booleanos intermedios (`AND`/`OR`), sino que re
     * **Salida por falso (cortocircuito):** Si cualquiera de las dos condiciones falla, toda la expresión es falsa; por eso se unifican ambas listas de saltos por falso (`$$.falselist = combinar_listas($1.falselist, $4.falselist)`). De este modo, si `$1` falla, salta sin evaluar `$4`, y ambas salidas terminarán apuntando al mismo destino falso final.
       
 
-- **Operador lógico OR (`cond_or: cond_or OP_OR {A1} M cond_and`):**
-  - **Acción en `{A1}`:** Convierte el último salto `BF` del operando izquierdo (`$1`) en un salto por verdadero `BV` y lo mueve de `$1.falselist` a `$1.truelist`. De esta manera, si la primera condición es verdadera, salta directamente al destino verdadero sin evaluar la segunda.
-  - **Acción al reducir la regla completa:** Completa `$1.falselist` apuntando al marcador `M` (`backpatch($1.falselist, $4)`) para evaluar `$5` únicamente cuando `$1` haya resultado falso. Finalmente, propaga `$$.truelist = combinar_listas($1.truelist, $5.truelist)` y `$$.falselist = $5.falselist`.
-
+* **Operador lógico OR (`cond_or: cond_or OP_OR {A1} M cond_and`):**
+  * **Acción semántica:** Resuelve la evaluación por cortocircuito asegurando que alcance con que se cumpla una de las dos condiciones, mediante dos momentos de ejecución:
+    * **Cortocircuito por verdadero (`{A1}`):** Antes de evaluar la segunda condición (`$5`), convierte el salto por falso (`BF`) que se había generado originalmente para la primera condición (`$1`) en un salto por verdadero (`BV`) y lo pasa de `$1.falselist` a `$1.truelist`. De esta forma, si la primera condición se cumple, salta directamente al bloque verdadero sin evaluar la segunda.
+    * **Continuación por falso:** Si la primera condición falla, se rellenan sus saltos falsos restantes con la posición del marcador `M` (`backpatch($1.falselist, $4)`), haciendo que el flujo avance a evaluar la segunda condición (`$5`).
+    * **Resultado final del conjunto:** Como el `OR` es verdadero si se cumple cualquiera de las dos condiciones, junta ambas listas verdaderas en una sola (`$$.truelist = combinar_listas($1.truelist, $5.truelist)`) para rellenarlas juntas cuando se conozca el inicio del bloque. En cambio, toda la expresión falla únicamente si también falla la segunda condición, por lo que guarda sus saltos falsos pendientes (`$$.falselist = $5.falselist`) para rellenarlos más adelante con el destino falso final.
+   
+  
 #### 4.6 Estructura Condicional `si` / `sino`
 
-- **Al reducir la condición (`marca_si: PR_SI PAR_IZQ condicion PAR_DER`):**
-  - **Acción:** Completa todos los saltos verdaderos pendientes (`$3.truelist`) con el índice de inicio del bloque `si` (`backpatch($3.truelist, indice_terceto)`) y apila la estructura `CondAttr` en `pila_condiciones` (`apilar_cond($3)`) para conservar su `falselist`.
+* **Al terminar de leer la condición (`marca_si: PR_SI PAR_IZQ condicion PAR_DER`):**
+  * **Acción:** Justo antes de entrar al bloque `{ ... }`, `condicion` (`$3`) trae dos listas de índices de saltos pendientes (`?`): `truelist` y `falselist`. En este punto se conoce el inicio del bloque pero aún no su final:
+    * **Resuelve los saltos verdaderos:** completa `$3.truelist` con el terceto actual (`backpatch($3.truelist, indice_terceto)`), entrando directo al inicio del bloque.
+    * **Resguarda los saltos falsos:** guarda `$3` en `pila_condiciones` (`apilar_cond($3)`) para conservar su `falselist` mientras se compila el interior (y permitir `si` anidados).
 
-- **Caso `si` simple (`si: marca_si bloque`):**
-  - **Acción:** Al finalizar el bloque, desapila `c` de `pila_condiciones` y completa todos los saltos de `c.falselist` con la dirección del próximo terceto fuera de la estructura (`backpatch(c.falselist, indice_terceto)`).
+* **Al cerrar un `si` simple (`si: marca_si bloque`):**
+  * **Acción:** Al terminar de compilar el bloque `{ ... }`, el terceto actual es la primera instrucción posterior a la estructura:
+    * **Completa la salida por falso:** desapila `c` desde `pila_condiciones` y rellena `c.falselist` con el terceto actual (`backpatch(c.falselist, indice_terceto)`), salteando el bloque si la condición falló.
 
-- **Caso `si` con `sino` (`si: marca_si bloque PR_SINO {A1} bloque {A2}`):**
-  - **En `{A1}` (al finalizar el bloque `si`, antes de entrar al `sino`):**
-    1. Desapila `c` de `pila_condiciones`.
-    2. Genera un terceto de bifurcación incondicional con destino pendiente para esquivar el bloque `sino`: `crear_terceto("BI", "?", "-")`, y apila su índice (`pos_bi`) en `pila_saltos`.
-    3. Completa `c.falselist` apuntando al inicio del bloque `sino` (`backpatch(c.falselist, indice_terceto)`).
+* **Caso `si` con `sino` (`si: marca_si bloque PR_SINO {A1} bloque {A2}`):**
+  * **En `{A1}` (al finalizar el bloque `si`, antes de entrar al `sino`):**
+    1. Desapila `c` de `pila_condiciones` para recuperar su `falselist`.
+    2. Genera un salto incondicional pendiente (`crear_terceto("BI", "?", "-")`) y apila su índice (`pos_bi`) en `pila_saltos` para saltear el `sino` al terminar la rama verdadera.
+    3. Completa `c.falselist` apuntando al terceto actual (`backpatch(c.falselist, indice_terceto)`), marcando el inicio del bloque `sino`.
 
-  - **En `{A2}` (al finalizar el bloque `sino`):**
-    1. Desapila `pos_bi` de `pila_saltos` y completa su primer operando (`modificar_terceto_op1(pos_bi, "[T_fin]")`) para continuar la ejecución fuera de la estructura.
+  * **En `{A2}` (al finalizar el bloque `sino`):**
+    1. Desapila `pos_bi` de `pila_saltos` y completa su destino con el terceto de salida (`modificar_terceto_op1(pos_bi, "[T_fin]")`), cerrando la estructura condicional.
+
+
 
 #### 4.7 Estructura Iterativa `mientras`
 
