@@ -142,17 +142,19 @@ El compilador no genera tercetos booleanos intermedios (`AND`/`OR`), sino que re
 
 #### 4.7 Estructura Iterativa `mientras`
 
-- **Al iniciar el bucle (`inicio_mientras: PR_MIENTRAS`):**
-  - **Acción:** Guarda en `pila_saltos` el índice del próximo terceto a generar (`apilar(indice_terceto)`), marcando el punto exacto donde comienza a evaluarse la condición.
+* **Al iniciar el bucle (`inicio_mientras: PR_MIENTRAS`):**
+  * **Acción:** Antes de compilar la condición, guarda en `pila_saltos` el número de terceto actual (`apilar(indice_terceto)`), dejando marcada la posición exacta adonde deberá volver el flujo al final de cada iteración para reevaluar la condición.
 
-- **Al reducir la condición (`condicion_mientras: inicio_mientras PAR_IZQ condicion PAR_DER`):**
-  - **Acción:** Completa todos los saltos verdaderos pendientes (`$3.truelist`) apuntando al inicio del cuerpo del bucle (`backpatch($3.truelist, indice_terceto)`) y apila `$3` en `pila_condiciones` (`apilar_cond($3)`).
+* **Al terminar de leer la condición (`condicion_mientras: inicio_mientras PAR_IZQ condicion PAR_DER`):**
+  * **Acción:** Justo antes de entrar al bloque `{ ... }`, ya se conoce dónde empieza el cuerpo del bucle pero aún no dónde termina:
+    * **Resuelve los saltos verdaderos:** completa `$3.truelist` con el terceto actual (`backpatch($3.truelist, indice_terceto)`), ingresando directo al cuerpo del `mientras`.
+    * **Resguarda los saltos falsos:** guarda `$3` en `pila_condiciones` (`apilar_cond($3)`) para conservar su `falselist` mientras se compila el interior (y permitir bucles anidados).
 
-- **Al finalizar el bloque del bucle (`mientras: condicion_mientras bloque`):**
-  - **Acción:**
-    1. Desapila `c` de `pila_condiciones` y `pos_inicio` de `pila_saltos`.
-    2. Genera el salto incondicional de retorno al comienzo de la condición: `crear_terceto("BI", "[T_inicio]", "-")`.
-    3. Completa todos los saltos de `c.falselist` con el índice del terceto siguiente al `BI` para salir del bucle (`backpatch(c.falselist, indice_terceto)`).
+* **Al cerrar el bloque del bucle (`mientras: condicion_mientras bloque`):**
+  * **Acción:** Una vez compilado el cuerpo `{ ... }`, se cierra el ciclo en tres pasos:
+    1. Desapila `c` de `pila_condiciones` y la dirección de retorno `pos_inicio` de `pila_saltos`.
+    2. Genera un salto incondicional hacia el inicio de la condición (`crear_terceto("BI", "[T_inicio]", "-")`) para repetir el ciclo.
+    3. Rellena todos los saltos falsos pendientes (`backpatch(c.falselist, indice_terceto)`) con el terceto siguiente al `BI`, dirigiendo la salida fuera del bucle cuando la condición deje de cumplirse.
 
 #### 4.8 Sentencias de Salida y Retorno (`mostrar` / `retornar`)
 
