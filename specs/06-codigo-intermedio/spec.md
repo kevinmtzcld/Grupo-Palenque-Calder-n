@@ -56,17 +56,17 @@ Aquí tenés la especificación completa de generación de código intermedio ad
 
 Para interpretar las acciones semánticas de cada producción, se utilizan los siguientes marcadores:
 
-- **`$$`:** Representa el valor semántico del símbolo no terminal ubicado a la izquierda de la producción. Se utiliza para almacenar el resultado y propagarlo hacia las reglas gramaticales superiores.
-- **`$1`, `$2`, `$3`, ...:** Representan los valores semánticos de los símbolos ubicados a la derecha de la producción. El número indica la posición que ocupa cada símbolo, contando de izquierda a derecha.
+- **`$$`:** Representa el valor semántico del símbolo no terminal ubicado a la izquierda de la producción. Se utiliza para guardar el resultado y propagarlo hacia las reglas gramaticales superiores.
+- **`$1`, `$2`, `$3`, ...:** Representan los valores semánticos de los símbolos que están a la derecha de la producción. El número indica la posición que ocupa cada símbolo, contando de izquierda a derecha.
 
 #### 4.1 Operandos simples y Reglas intermedias
 
 - **Operandos (`factor: LIT_RACIONAL | ID`):** No generan tercetos.
   - **Acción:** Si es un literal racional (`LIT_RACIONAL`), se copia su representación textual (`$1`, ej. `"3/4"`) hacia el símbolo no terminal `factor` mediante `strcpy($$, $1)`.
-  - **Acción:** Si es un identificador (`ID`), se valida mediante `verificar_variable($1)` que haya sido declarado previamente y se propaga su nombre hacia arriba (`strcpy($$, $1)`).
+  - **Acción:** Si es un identificador (`ID`), se valida mediante `verificar_variable($1)` que haya sido declarado antes y se propaga su nombre hacia arriba (`strcpy($$, $1)`).
 
 - **Reglas intermedias:**
-  - **Aritméticas (`termino: factor`, `expresion: termino`):** No generan tercetos. Propagan hacia arriba el lexema o la referencia al terceto creado mediante `strcpy($$, $1)`.
+  - **Aritméticas (`termino: factor`, `expresion: termino`):** No generan tercetos. Transmiten hacia arriba el lexema o la referencia al terceto creado mediante `strcpy($$, $1)`.
   - **Lógicas (`condicion: cond_or`, `cond_or: cond_and`, `cond_and: cond_factor`, `cond_factor: comparacion`):** No generan tercetos. Propagan hacia arriba la estructura `CondAttr`, que contiene las listas `truelist` y `falselist`, mediante `$$ = $1`.
 
 - **Agrupación con paréntesis:**
@@ -84,7 +84,7 @@ Para interpretar las acciones semánticas de cada producción, se utilizan los s
 #### 4.3 Expresiones Aritméticas y Comparaciones
 
 - **Operaciones aritméticas (`expresion: expresion OP_SUMA termino | expresion OP_RESTA termino` y `termino: termino OP_MULT factor | termino OP_DIV factor`):**
-  - **Acción:** Toma los dos operandos de la operación: `$1` contiene el operando izquierdo y `$3` el operando derecho. Según el operador reconocido (`+`, `-`, `*` o `/`), genera el terceto correspondiente mediante `crear_terceto(op, $1, $3)` (ej. `[T2] (+, a, 3/4)`). Luego, guarda la referencia al terceto generado (`[T2]`) en `$$`, para que pueda utilizarse en operaciones posteriores.
+  - **Acción:** Toma los dos operandos de la operación: `$1` contiene el operando izquierdo y `$3` el operando derecho. Según el operador reconocido (`+`, `-`, `*` o `/`), genera el terceto correspondiente mediante `crear_terceto(op, $1, $3)` (ej. `[T2] (+, a, 3/4)`). Luego, guarda la referencia al terceto generado (`[T2]`) en `$$`, para que pueda utilizarse en operaciones superiores.
 
 - **Operador de comparación (`operador_comparacion: COMP_MAYOR | COMP_MENOR | COMP_MAYOR_IGUAL | COMP_MENOR_IGUAL | COMP_IGUAL | COMP_DISTINTO`):**
   - **Acción:** No genera ningún terceto. Según el token reconocido, obtiene el símbolo correspondiente (`>`, `<`, `>=`, `<=`, `==`, `!=`) y lo guarda en `$$`. De esta manera, la siguiente regla puede utilizar ese símbolo para generar el terceto de comparación.
@@ -99,7 +99,7 @@ Para interpretar las acciones semánticas de cada producción, se utilizan los s
 
 #### 4.5 Operadores Lógicos (`and` / `or`) con Cortocircuito
 
-El compilador no genera tercetos booleanos intermedios (`AND`/`OR`), sino que resuelve la evaluación lógica mediante cortocircuito y *backpatching* sobre las listas `truelist` y `falselist`:
+El compilador no genera tercetos intermedios (`AND`/`OR`), sino que resuelve la evaluación lógica mediante cortocircuito y *backpatching* sobre las listas `truelist` y `falselist`:
 
 - **Marcador de posición (`M: /* vacio */`):**
   - **Acción:** Guarda en `$$` el índice del próximo terceto a generarse (`$$ = indice_terceto`). Marca el punto de entrada de la segunda subcondición.
@@ -123,7 +123,7 @@ El compilador no genera tercetos booleanos intermedios (`AND`/`OR`), sino que re
 * **Al terminar de leer la condición (`marca_si: PR_SI PAR_IZQ condicion PAR_DER`):**
   * **Acción:** Justo antes de entrar al bloque `{ ... }`, `condicion` (`$3`) trae dos listas de índices de saltos pendientes (`?`): `truelist` y `falselist`. En este punto se conoce el inicio del bloque pero aún no su final:
     * **Resuelve los saltos verdaderos:** completa `$3.truelist` con el terceto actual (`backpatch($3.truelist, indice_terceto)`), entrando directo al inicio del bloque.
-    * **Resguarda los saltos falsos:** guarda `$3` en `pila_condiciones` (`apilar_cond($3)`) para conservar su `falselist` mientras se compila el interior (y permitir `si` anidados).
+    * **Conserva los saltos falsos:** guarda `$3` en `pila_condiciones` (`apilar_cond($3)`) para conservar su `falselist` mientras se compila el interior (y permitir `si` anidados).
 
 * **Al cerrar un `si` simple (`si: marca_si bloque`):**
   * **Acción:** Al terminar de compilar el bloque `{ ... }`, el terceto actual es la primera instrucción posterior a la estructura:
@@ -132,28 +132,28 @@ El compilador no genera tercetos booleanos intermedios (`AND`/`OR`), sino que re
 * **Caso `si` con `sino` (`si: marca_si bloque PR_SINO {A1} bloque {A2}`):**
   * **En `{A1}` (al finalizar el bloque `si`, antes de entrar al `sino`):**
     1. Desapila `c` de `pila_condiciones` para recuperar su `falselist`.
-    2. Genera un salto incondicional pendiente (`crear_terceto("BI", "?", "-")`) y apila su índice (`pos_bi`) en `pila_saltos` para saltear el `sino` al terminar la rama verdadera.
+    2. Genera un salto incondicional pendiente (`crear_terceto("BI", "?", "-")`) y apila su índice (`pos_bi`) en `pila_saltos` para saltear el `sino` en caso de que se haya ejecutado el bloque verdadero del `si`
     3. Completa `c.falselist` apuntando al terceto actual (`backpatch(c.falselist, indice_terceto)`), marcando el inicio del bloque `sino`.
 
   * **En `{A2}` (al finalizar el bloque `sino`):**
-    1. Desapila `pos_bi` de `pila_saltos` y completa su destino con el terceto de salida (`modificar_terceto_op1(pos_bi, "[T_fin]")`), cerrando la estructura condicional.
+    1. Desapila `pos_bi` de `pila_saltos` y completa su destino con el terceto de salida (`modificar_terceto_op1(pos_bi, "[T_fin]")`), para saltear u omitir el bloque `sino`
 
 
 
 #### 4.7 Estructura Iterativa `mientras`
 
 * **Al iniciar el bucle (`inicio_mientras: PR_MIENTRAS`):**
-  * **Acción:** Antes de compilar la condición, guarda en `pila_saltos` el número de terceto actual (`apilar(indice_terceto)`), dejando marcada la posición exacta adonde deberá volver el flujo al final de cada iteración para reevaluar la condición.
+  * **Acción:** Antes de compilar la condición, guarda en `pila_saltos` el número del terceto actual (`apilar(indice_terceto)`), dejando marcada la posición exacta donde deberá volver la ejecución al final de cada iteración para reevaluar la condición.
 
 * **Al terminar de leer la condición (`condicion_mientras: inicio_mientras PAR_IZQ condicion PAR_DER`):**
   * **Acción:** Justo antes de entrar al bloque `{ ... }`, ya se conoce dónde empieza el cuerpo del bucle pero aún no dónde termina:
-    * **Resuelve los saltos verdaderos:** completa `$3.truelist` con el terceto actual (`backpatch($3.truelist, indice_terceto)`), ingresando directo al cuerpo del `mientras`.
-    * **Resguarda los saltos falsos:** guarda `$3` en `pila_condiciones` (`apilar_cond($3)`) para conservar su `falselist` mientras se compila el interior (y permitir bucles anidados).
+    * **Resuelve los saltos verdaderos:** Completa los saltos verdaderos pendientes de `condición` `$3.truelist` con el terceto actual -> (`backpatch($3.truelist, indice_terceto)`), ingresando directo al cuerpo del `mientras`.
+    * **Conserva los saltos falsos:** guarda `$3` en `pila_condiciones` (`apilar_cond($3)`) para conservar su `falselist` mientras se compila el interior (y permitir bucles anidados).
 
 * **Al cerrar el bloque del bucle (`mientras: condicion_mientras bloque`):**
   * **Acción:** Una vez compilado el cuerpo `{ ... }`, se cierra el ciclo en tres pasos:
     1. Desapila `c` de `pila_condiciones` y la dirección de retorno `pos_inicio` de `pila_saltos`.
-    2. Genera un salto incondicional hacia el inicio de la condición (`crear_terceto("BI", "[T_inicio]", "-")`) para repetir el ciclo.
+    2. Genera un salto incondicional hacia el inicio de la condición (`crear_terceto("BI", "[T_inicio]", "-")`) para reevaluar la condición del `mientras`.
     3. Rellena todos los saltos falsos pendientes (`backpatch(c.falselist, indice_terceto)`) con el terceto siguiente al `BI`, dirigiendo la salida fuera del bucle cuando la condición deje de cumplirse.
 
 #### 4.8 Sentencias de Salida y Retorno (`mostrar` / `retornar`)
