@@ -42,6 +42,6 @@ _(Asegurarse de que `ejemplo.raz` tenga el mismo nombre que el archivo indicado 
   - `ejemplo.raz` — programa base utilizado para generar los archivos de `out/`
   - `errores-semanticos` — casos con errores de tipos y validaciones semánticas
   - `errrores-lex-sint` — casos con errores léxicos y sintácticos
-  - `pruebas-requeridas-grupoc` — batería de pruebas obligatorias requeridas por la cátedra
+  - `pruebas-requeridas-grupoc` — pruebas obligatorias requeridas para el grupo C
 - `out/` — tercetos, tabla de símbolos exportada, `.asm` generado
 - `specs/` — especificaciones y bitácoras por etapa
