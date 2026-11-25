@@ -140,7 +140,7 @@ El compilador no genera tercetos intermedios (`AND`/`OR`), sino que resuelve la 
   * **En `{A1}` (al finalizar el bloque `si`, antes de entrar al `sino`):**
     1. Desapila `c` de `pila_condiciones` para recuperar su `falselist`.
     2. Genera un salto incondicional pendiente (`crear_terceto("BI", "?", "-")`) y apila su índice (`pos_bi`) en `pila_saltos` para saltear el `sino` en caso de que se haya ejecutado el bloque verdadero del `si`
-    3. Completa `c.falselist` apuntando al terceto actual (`backpatch(c.falselist, indice_terceto)`), marcando el inicio del bloque `sino`.
+    3. Completa `c.falselist` apuntando al terceto actual (`backpatch(c.falselist, indice_terceto)`), para ir directo al bloque del `sino` si la condición principal falló.
 
   * **En `{A2}` (al finalizar el bloque `sino`):**
     1. Desapila `pos_bi` de `pila_saltos` y completa su destino con el terceto de salida (`modificar_terceto_op1(pos_bi, "[T_fin]")`), para saltear u omitir el bloque `sino`
