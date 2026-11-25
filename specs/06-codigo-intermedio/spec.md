@@ -55,6 +55,9 @@ Aquí tenés la especificación completa de generación de código intermedio ad
 **Convención de Variables Semánticas de Bison (`$$`, `$1`, `$2`, ...)**
 
 Para interpretar las acciones semánticas de cada producción, se utilizan los siguientes marcadores:
+```text
+NoTerminal  :  Simbolo_1   Simbolo_2   {accion_intermedia}   Simbolo_3
+    $$             $1          $2               $3               $4
 
 - **`$$`:** Representa el valor semántico del símbolo no terminal ubicado a la izquierda de la producción. Se utiliza para guardar el resultado y propagarlo hacia las reglas gramaticales superiores.
 - **`$1`, `$2`, `$3`, ...:** Representan los valores semánticos de los símbolos que están a la derecha de la producción. El número indica la posición que ocupa cada símbolo, contando de izquierda a derecha.
