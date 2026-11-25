@@ -95,7 +95,7 @@ NoTerminal  :  Simbolo_1   Simbolo_2   {accion_intermedia}   Simbolo_3
 - **Comparaciones (`comparacion: expresion operador_comparacion expresion`):**
   - **Acción:** Resuelve la comparación en tres pasos preparando los saltos condicionales:
     1. **Evalúa la relación:** Genera el terceto de comparación `pos_comp = crear_terceto($2, $1, $3)` tomando el operador (`$2`) y ambas expresiones (`$1` y `$3`), por ejemplo `[T0] (>, x, 5/1)`.
-    2. **Prepara el salto por falso:** Emite inmediatamente un salto condicional por falso apuntando al resultado de esa comparación: `pos_bf = crear_terceto("BF", "[T0]", "?")`. Como en este punto aún no se sabe adónde saltar si la condición falla, el destino queda pendiente (`"?"`).
+    2. **Prepara el salto por falso:** Emite un salto condicional por falso: `pos_bf = crear_terceto("BF", "[T0]", "?")`. Como en este punto aún no se sabe adónde saltar si la condición falla, el destino queda pendiente (`"?"`).
     3. **Inicializa las listas de saltos:** Como el salto emitido solo actúa por falso (si la condición es verdadera el flujo simplemente continúa), deja `$$.truelist` vacía y guarda el índice `pos_bf` dentro de `$$.falselist` para rellenar su destino más adelante mediante *backpatching*.
   
 
